@@ -1,0 +1,6 @@
+github.com/jinzhongmin/goffi v0.0.0-20230818233529-84e446c4a770 h1:mqri8YbLM0kNbSYljtLQA3qCHN6Ug10/lXG8ReSY01U=
+github.com/jinzhongmin/goffi v0.0.0-20230818233529-84e446c4a770/go.mod h1:ry8s3l1SC2gpza1bFbOIb0MmBurtQmQVQeJVZJBTDkI=
+github.com/jinzhongmin/usf v0.0.0-20230818115909-72f118b9d216 h1:YYHEsbD58aDjrVQIHtVFceHg1tHB3nHAh2R0Bsst0Yw=
+github.com/jinzhongmin/usf v0.0.0-20230818115909-72f118b9d216/go.mod h1:bbc9ZPecQ4VigHV681E/4i8kOuuqGSgMevKqA7D1EYc=
+golang.org/x/text v0.8.0 h1:57P1ETyNKtuIjB4SRd15iJxuhj8Gc416Y78H3qgMh68=
+golang.org/x/text v0.8.0/go.mod h1:e1OnstbJyHTd6l/uOt8jFFHp6TRDWZR/bV3emEE/zU8=
