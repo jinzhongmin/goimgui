@@ -15,6 +15,8 @@ package gi
 //const struct __ImVec2_ones__{float x; float y;} __imvec2_ones = {1, 1};
 //const struct __ImVec2_10__{float x; float y;} __imvec2_10 = {1, 0};
 //const struct __ImVec2_01__{float x; float y;} __imvec2_01 = {0, 1};
+//const struct __ImVec4_ones__{float x; float y;float z; float w;} __imvec4_ones ={1, 1, 1, 1};
+//const struct __ImVec4_zero__{float x; float y;float z; float w;} __imvec4_zero ={0, 0, 0, 0};
 import "C"
 import (
 	"unsafe"
@@ -3059,6 +3061,7 @@ var (
 	_typs_PPF64F64PU32                          = []c.Type{c.Pointer, c.Pointer, c.F64, c.F64, c.Pointer, c.U32}
 	_typs_PPI32I32PU32                          = []c.Type{c.Pointer, c.Pointer, c.I32, c.I32, c.Pointer, c.U32}
 	_typs_PPPI32I32PF32F32Vec2I32               = []c.Type{c.Pointer, c.Pointer, c.Pointer, c.I32, c.I32, c.Pointer, c.F32, c.F32, _TypVec2, c.I32}
+	_typs_PPPI32I32PF32F32Vec2                  = []c.Type{c.Pointer, c.Pointer, c.Pointer, c.I32, c.I32, c.Pointer, c.F32, c.F32, _TypVec2}
 	_typs_PPI32I32PF32F32Vec2I32                = []c.Type{c.Pointer, c.Pointer, c.I32, c.I32, c.Pointer, c.F32, c.F32, _TypVec2, c.I32}
 	_typs_PPI32I32U32                           = []c.Type{c.Pointer, c.Pointer, c.I32, c.I32, c.U32}
 	_typs_PPF32I32I32PU32                       = []c.Type{c.Pointer, c.Pointer, c.F32, c.I32, c.I32, c.Pointer, c.U32}
@@ -3074,6 +3077,7 @@ var (
 	_typs_PPPI32                                = []c.Type{c.Pointer, c.Pointer, c.Pointer, c.I32}
 	_typs_PPPI32F32                             = []c.Type{c.Pointer, c.Pointer, c.Pointer, c.I32, c.F32}
 	_typs_PPPI32I32                             = []c.Type{c.Pointer, c.Pointer, c.Pointer, c.I32, c.I32}
+	_typs_PPPPI32I32                            = []c.Type{c.Pointer, c.Pointer, c.Pointer, c.Pointer, c.I32, c.I32}
 	_typs_PPU32                                 = []c.Type{c.Pointer, c.Pointer, c.U32}
 	_typs_PPU32P                                = []c.Type{c.Pointer, c.Pointer, c.U32, c.Pointer}
 	_typs_PVec4U32Vec2                          = []c.Type{c.Pointer, _TypVec4, c.U32, _TypVec2}
@@ -3239,21 +3243,17 @@ var (
 	_typs_PI32I32I32I32PU8U32                   = []c.Type{c.Pointer, c.I32, c.I32, c.I32, c.I32, c.Pointer, c.U8, c.U32}
 )
 
-var (
-	_i32_zero      = &C.__i32_zero
-	_i32_one       = &C.__i32_one
-	_i32_minus_one = &C.__i32_minus_one
-	_bool_false    = &C.__i32_false
-	_bool_true     = &C.__i32_true
-	_u32_zero      = &C.__u32_zero
-	_f32_zero      = C._f32_zero
-	_f32_minus_one = C._f32_minus_one
-	_ptr_zero      = &C.__ptr_zero
-	_vec2_zero     = &C.__imvec2_zero
-	_vec2_ones     = &C.__imvec2_ones
-	_vec2_10       = &C.__imvec2_10
-	_vec2_01       = &C.__imvec2_01
-)
+func _i32ZeroPtr() unsafe.Pointer   { return unsafe.Pointer(&C.__i32_zero) }
+func _boolFalsePtr() unsafe.Pointer { return unsafe.Pointer(&C.__i32_false) }
+func _u32ZeroPtr() unsafe.Pointer   { return unsafe.Pointer(&C.__u32_zero) }
+func _ptrZeroPtr() unsafe.Pointer   { return unsafe.Pointer(&C.__ptr_zero) }
+func _vec2ZeroPtr() unsafe.Pointer  { return unsafe.Pointer(&C.__imvec2_zero) }
+func _vec2onesPtr() unsafe.Pointer  { return unsafe.Pointer(&C.__imvec2_ones) }
+func _vec2_10Ptr() unsafe.Pointer   { return unsafe.Pointer(&C.__imvec2_10) }
+func _vec2_01Ptr() unsafe.Pointer   { return unsafe.Pointer(&C.__imvec2_01) }
+func _vec4OnesPtr() unsafe.Pointer  { return unsafe.Pointer(&C.__imvec4_ones) }
+func _vec4ZeroPtr() unsafe.Pointer  { return unsafe.Pointer(&C.__imvec4_ones) }
+
 var (
 	ImVec2ZeroPtr = (*ImVec2)(unsafe.Pointer(&C.__imvec2_zero))
 )
@@ -3433,7 +3433,7 @@ var (
 	_func_igSelectable_Bool_                                     = &c.FuncPrototype{Name: "igSelectable_Bool", OutType: c.I32, InTypes: _typs_PI32U32Vec2}
 	_func_igBeginListBox_                                        = &c.FuncPrototype{Name: "igBeginListBox", OutType: c.I32, InTypes: _typs_PVec2}
 	_func_igListBox_Str_arr_                                     = &c.FuncPrototype{Name: "igListBox_Str_arr", OutType: c.I32, InTypes: _typs_PPPI32I32}
-	_func_igListBox_FnBoolPtr_                                   = &c.FuncPrototype{Name: "igListBox_FnBoolPtr", OutType: c.I32, InTypes: _typs_PPPI32I32}
+	_func_igListBox_FnBoolPtr_                                   = &c.FuncPrototype{Name: "igListBox_FnBoolPtr", OutType: c.I32, InTypes: _typs_PPPPI32I32}
 	_func_igBeginMenuBar_                                        = &c.FuncPrototype{Name: "igBeginMenuBar", OutType: c.I32, InTypes: nil}
 	_func_igBeginMainMenuBar_                                    = &c.FuncPrototype{Name: "igBeginMainMenuBar", OutType: c.I32, InTypes: nil}
 	_func_igBeginMenu_                                           = &c.FuncPrototype{Name: "igBeginMenu", OutType: c.I32, InTypes: _typs_PI32}
@@ -3627,9 +3627,9 @@ var (
 	_func_igTreePush_Ptr_                                        = &c.FuncPrototype{Name: "igTreePush_Ptr", OutType: c.Void, InTypes: _typs_P}
 	_func_igSetNextItemOpen_                                     = &c.FuncPrototype{Name: "igSetNextItemOpen", OutType: c.Void, InTypes: _typs_I32U32}
 	_func_igPlotLines_FloatPtr_                                  = &c.FuncPrototype{Name: "igPlotLines_FloatPtr", OutType: c.Void, InTypes: _typs_PPI32I32PF32F32Vec2I32}
-	_func_igPlotLines_FnFloatPtr_                                = &c.FuncPrototype{Name: "igPlotLines_FnFloatPtr", OutType: c.Void, InTypes: _typs_PPPI32I32PF32F32Vec2I32}
+	_func_igPlotLines_FnFloatPtr_                                = &c.FuncPrototype{Name: "igPlotLines_FnFloatPtr", OutType: c.Void, InTypes: _typs_PPPI32I32PF32F32Vec2}
 	_func_igPlotHistogram_FloatPtr_                              = &c.FuncPrototype{Name: "igPlotHistogram_FloatPtr", OutType: c.Void, InTypes: _typs_PPI32I32PF32F32Vec2I32}
-	_func_igPlotHistogram_FnFloatPtr_                            = &c.FuncPrototype{Name: "igPlotHistogram_FnFloatPtr", OutType: c.Void, InTypes: _typs_PPPI32I32PF32F32Vec2I32}
+	_func_igPlotHistogram_FnFloatPtr_                            = &c.FuncPrototype{Name: "igPlotHistogram_FnFloatPtr", OutType: c.Void, InTypes: _typs_PPPI32I32PF32F32Vec2}
 	_func_igValue_Bool_                                          = &c.FuncPrototype{Name: "igValue_Bool", OutType: c.Void, InTypes: _typs_PI32}
 	_func_igValue_Int_                                           = &c.FuncPrototype{Name: "igValue_Int", OutType: c.Void, InTypes: _typs_PI32}
 	_func_igValue_Uint_                                          = &c.FuncPrototype{Name: "igValue_Uint", OutType: c.Void, InTypes: _typs_PU32}
@@ -3740,4 +3740,171 @@ var (
 	_func_ImGuiTextBuffer_ImGuiTextBuffer_                       = &c.FuncPrototype{Name: "ImGuiTextBuffer_ImGuiTextBuffer", OutType: c.Pointer, InTypes: nil}
 	_func_ImGuiTextBuffer_destroy_                               = &c.FuncPrototype{Name: "ImGuiTextBuffer_destroy", OutType: c.Void, InTypes: _typs_P}
 	_func_ImGuiTextBuffer_begin_                                 = &c.FuncPrototype{Name: "ImGuiTextBuffer_begin", OutType: c.Pointer, InTypes: _typs_P}
+	_func_ImColor_destroy_                                       = &c.FuncPrototype{Name: "ImColor_destroy", OutType: c.Void, InTypes: _typs_P}
+	_func_ImColor_HSV_                                           = &c.FuncPrototype{Name: "ImColor_HSV", OutType: c.Void, InTypes: _typs_PF32F32F32F32}
+	_func_ImColor_ImColor_Float_                                 = &c.FuncPrototype{Name: "ImColor_ImColor_Float", OutType: c.Pointer, InTypes: _typs_F32F32F32F32}
+	_func_ImColor_ImColor_Int_                                   = &c.FuncPrototype{Name: "ImColor_ImColor_Int", OutType: c.Pointer, InTypes: _typs_I32I32I32I32}
+	_func_ImColor_ImColor_Nil_                                   = &c.FuncPrototype{Name: "ImColor_ImColor_Nil", OutType: c.Pointer, InTypes: nil}
+	_func_ImColor_ImColor_U32_                                   = &c.FuncPrototype{Name: "ImColor_ImColor_U32", OutType: c.Pointer, InTypes: _typs_U32}
+	_func_ImColor_ImColor_Vec4_                                  = &c.FuncPrototype{Name: "ImColor_ImColor_Vec4", OutType: c.Pointer, InTypes: _typs_Vec4}
+	_func_ImColor_SetHSV_                                        = &c.FuncPrototype{Name: "ImColor_SetHSV", OutType: c.Void, InTypes: _typs_PF32F32F32F32}
+	_func_ImDrawCmd_destroy_                                     = &c.FuncPrototype{Name: "ImDrawCmd_destroy", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawCmd_GetTexID_                                    = &c.FuncPrototype{Name: "ImDrawCmd_GetTexID", OutType: c.Pointer, InTypes: _typs_P}
+	_func_ImDrawCmd_ImDrawCmd_                                   = &c.FuncPrototype{Name: "ImDrawCmd_ImDrawCmd", OutType: c.Pointer, InTypes: nil}
+	_func_ImDrawData_Clear_                                      = &c.FuncPrototype{Name: "ImDrawData_Clear", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawData_DeIndexAllBuffers_                          = &c.FuncPrototype{Name: "ImDrawData_DeIndexAllBuffers", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawData_destroy_                                    = &c.FuncPrototype{Name: "ImDrawData_destroy", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawData_ImDrawData_                                 = &c.FuncPrototype{Name: "ImDrawData_ImDrawData", OutType: c.Pointer, InTypes: nil}
+	_func_ImDrawData_ScaleClipRects_                             = &c.FuncPrototype{Name: "ImDrawData_ScaleClipRects", OutType: c.Void, InTypes: _typs_PVec2}
+	_func_ImDrawList__CalcCircleAutoSegmentCount_                = &c.FuncPrototype{Name: "ImDrawList__CalcCircleAutoSegmentCount", OutType: c.I32, InTypes: _typs_PF32}
+	_func_ImDrawList__ClearFreeMemory_                           = &c.FuncPrototype{Name: "ImDrawList__ClearFreeMemory", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList__OnChangedClipRect_                         = &c.FuncPrototype{Name: "ImDrawList__OnChangedClipRect", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList__OnChangedTextureID_                        = &c.FuncPrototype{Name: "ImDrawList__OnChangedTextureID", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList__OnChangedVtxOffset_                        = &c.FuncPrototype{Name: "ImDrawList__OnChangedVtxOffset", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList__PathArcToFastEx_                           = &c.FuncPrototype{Name: "ImDrawList__PathArcToFastEx", OutType: c.Void, InTypes: _typs_PVec2F32I32I32I32}
+	_func_ImDrawList__PathArcToN_                                = &c.FuncPrototype{Name: "ImDrawList__PathArcToN", OutType: c.Void, InTypes: _typs_PVec2F32F32F32I32}
+	_func_ImDrawList__PopUnusedDrawCmd_                          = &c.FuncPrototype{Name: "ImDrawList__PopUnusedDrawCmd", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList__ResetForNewFrame_                          = &c.FuncPrototype{Name: "ImDrawList__ResetForNewFrame", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList__TryMergeDrawCmds_                          = &c.FuncPrototype{Name: "ImDrawList__TryMergeDrawCmds", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList_AddBezierCubic_                             = &c.FuncPrototype{Name: "ImDrawList_AddBezierCubic", OutType: c.Void, InTypes: _typs_PVec2Vec2Vec2Vec2U32F32I32}
+	_func_ImDrawList_AddBezierQuadratic_                         = &c.FuncPrototype{Name: "ImDrawList_AddBezierQuadratic", OutType: c.Void, InTypes: _typs_PVec2Vec2Vec2U32F32I32}
+	_func_ImDrawList_AddCircle_                                  = &c.FuncPrototype{Name: "ImDrawList_AddCircle", OutType: c.Void, InTypes: _typs_PVec2F32U32I32F32}
+	_func_ImDrawList_AddCircleFilled_                            = &c.FuncPrototype{Name: "ImDrawList_AddCircleFilled", OutType: c.Void, InTypes: _typs_PVec2F32U32I32}
+	_func_ImDrawList_AddConvexPolyFilled_                        = &c.FuncPrototype{Name: "ImDrawList_AddConvexPolyFilled", OutType: c.Void, InTypes: _typs_PPI32U32}
+	_func_ImDrawList_AddDrawCmd_                                 = &c.FuncPrototype{Name: "ImDrawList_AddDrawCmd", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList_AddImage_                                   = &c.FuncPrototype{Name: "ImDrawList_AddImage", OutType: c.Void, InTypes: _typs_PPVec2Vec2Vec2Vec2U32}
+	_func_ImDrawList_AddImageQuad_                               = &c.FuncPrototype{Name: "ImDrawList_AddImageQuad", OutType: c.Void, InTypes: _typs_PPVec2Vec2Vec2Vec2Vec2Vec2Vec2Vec2U32}
+	_func_ImDrawList_AddImageRounded_                            = &c.FuncPrototype{Name: "ImDrawList_AddImageRounded", OutType: c.Void, InTypes: _typs_PPVec2Vec2Vec2Vec2U32F32U32}
+	_func_ImDrawList_AddLine_                                    = &c.FuncPrototype{Name: "ImDrawList_AddLine", OutType: c.Void, InTypes: _typs_PVec2Vec2U32F32}
+	_func_ImDrawList_AddNgon_                                    = &c.FuncPrototype{Name: "ImDrawList_AddNgon", OutType: c.Void, InTypes: _typs_PVec2F32U32I32F32}
+	_func_ImDrawList_AddNgonFilled_                              = &c.FuncPrototype{Name: "ImDrawList_AddNgonFilled", OutType: c.Void, InTypes: _typs_PVec2F32U32I32}
+	_func_ImDrawList_AddPolyline_                                = &c.FuncPrototype{Name: "ImDrawList_AddPolyline", OutType: c.Void, InTypes: _typs_PPI32U32U32F32}
+	_func_ImDrawList_AddQuad_                                    = &c.FuncPrototype{Name: "ImDrawList_AddQuad", OutType: c.Void, InTypes: _typs_PVec2Vec2Vec2Vec2U32F32}
+	_func_ImDrawList_AddQuadFilled_                              = &c.FuncPrototype{Name: "ImDrawList_AddQuadFilled", OutType: c.Void, InTypes: _typs_PVec2Vec2Vec2Vec2U32}
+	_func_ImDrawList_AddRect_                                    = &c.FuncPrototype{Name: "ImDrawList_AddRect", OutType: c.Void, InTypes: _typs_PVec2Vec2U32F32U32F32}
+	_func_ImDrawList_AddRectFilled_                              = &c.FuncPrototype{Name: "ImDrawList_AddRectFilled", OutType: c.Void, InTypes: _typs_PVec2Vec2U32F32U32}
+	_func_ImDrawList_AddRectFilledMultiColor_                    = &c.FuncPrototype{Name: "ImDrawList_AddRectFilledMultiColor", OutType: c.Void, InTypes: _typs_PVec2Vec2U32U32U32U32}
+	_func_ImDrawList_AddText_FontPtr_                            = &c.FuncPrototype{Name: "ImDrawList_AddText_FontPtr", OutType: c.Void, InTypes: _typs_PPF32Vec2U32PPF32P}
+	_func_ImDrawList_AddText_Vec2_                               = &c.FuncPrototype{Name: "ImDrawList_AddText_Vec2", OutType: c.Void, InTypes: _typs_PVec2U32PP}
+	_func_ImDrawList_AddTriangle_                                = &c.FuncPrototype{Name: "ImDrawList_AddTriangle", OutType: c.Void, InTypes: _typs_PVec2Vec2Vec2U32F32}
+	_func_ImDrawList_AddTriangleFilled_                          = &c.FuncPrototype{Name: "ImDrawList_AddTriangleFilled", OutType: c.Void, InTypes: _typs_PVec2Vec2Vec2U32}
+	_func_ImDrawList_ChannelsMerge_                              = &c.FuncPrototype{Name: "ImDrawList_ChannelsMerge", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList_ChannelsSetCurrent_                         = &c.FuncPrototype{Name: "ImDrawList_ChannelsSetCurrent", OutType: c.Void, InTypes: _typs_PI32}
+	_func_ImDrawList_ChannelsSplit_                              = &c.FuncPrototype{Name: "ImDrawList_ChannelsSplit", OutType: c.Void, InTypes: _typs_PI32}
+	_func_ImDrawList_CloneOutput_                                = &c.FuncPrototype{Name: "ImDrawList_CloneOutput", OutType: c.Pointer, InTypes: _typs_P}
+	_func_ImDrawList_destroy_                                    = &c.FuncPrototype{Name: "ImDrawList_destroy", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList_GetClipRectMax_                             = &c.FuncPrototype{Name: "ImDrawList_GetClipRectMax", OutType: c.Void, InTypes: _typs_PP}
+	_func_ImDrawList_GetClipRectMin_                             = &c.FuncPrototype{Name: "ImDrawList_GetClipRectMin", OutType: c.Void, InTypes: _typs_PP}
+	_func_ImDrawList_ImDrawList_                                 = &c.FuncPrototype{Name: "ImDrawList_ImDrawList", OutType: c.Pointer, InTypes: _typs_P}
+	_func_ImDrawList_PathArcTo_                                  = &c.FuncPrototype{Name: "ImDrawList_PathArcTo", OutType: c.Void, InTypes: _typs_PVec2F32F32F32I32}
+	_func_ImDrawList_PathArcToFast_                              = &c.FuncPrototype{Name: "ImDrawList_PathArcToFast", OutType: c.Void, InTypes: _typs_PVec2F32I32I32}
+	_func_ImDrawList_PathBezierCubicCurveTo_                     = &c.FuncPrototype{Name: "ImDrawList_PathBezierCubicCurveTo", OutType: c.Void, InTypes: _typs_PVec2Vec2Vec2I32}
+	_func_ImDrawList_PathBezierQuadraticCurveTo_                 = &c.FuncPrototype{Name: "ImDrawList_PathBezierQuadraticCurveTo", OutType: c.Void, InTypes: _typs_PVec2Vec2I32}
+	_func_ImDrawList_PathClear_                                  = &c.FuncPrototype{Name: "ImDrawList_PathClear", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList_PathFillConvex_                             = &c.FuncPrototype{Name: "ImDrawList_PathFillConvex", OutType: c.Void, InTypes: _typs_PU32}
+	_func_ImDrawList_PathLineTo_                                 = &c.FuncPrototype{Name: "ImDrawList_PathLineTo", OutType: c.Void, InTypes: _typs_PVec2}
+	_func_ImDrawList_PathLineToMergeDuplicate_                   = &c.FuncPrototype{Name: "ImDrawList_PathLineToMergeDuplicate", OutType: c.Void, InTypes: _typs_PVec2}
+	_func_ImDrawList_PathRect_                                   = &c.FuncPrototype{Name: "ImDrawList_PathRect", OutType: c.Void, InTypes: _typs_PVec2Vec2F32U32}
+	_func_ImDrawList_PathStroke_                                 = &c.FuncPrototype{Name: "ImDrawList_PathStroke", OutType: c.Void, InTypes: _typs_PU32U32F32}
+	_func_ImDrawList_PopClipRect_                                = &c.FuncPrototype{Name: "ImDrawList_PopClipRect", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList_PopTextureID_                               = &c.FuncPrototype{Name: "ImDrawList_PopTextureID", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList_PrimQuadUV_                                 = &c.FuncPrototype{Name: "ImDrawList_PrimQuadUV", OutType: c.Void, InTypes: _typs_PVec2Vec2Vec2Vec2Vec2Vec2Vec2Vec2U32}
+	_func_ImDrawList_PrimRect_                                   = &c.FuncPrototype{Name: "ImDrawList_PrimRect", OutType: c.Void, InTypes: _typs_PVec2Vec2U32}
+	_func_ImDrawList_PrimRectUV_                                 = &c.FuncPrototype{Name: "ImDrawList_PrimRectUV", OutType: c.Void, InTypes: _typs_PVec2Vec2Vec2Vec2U32}
+	_func_ImDrawList_PrimReserve_                                = &c.FuncPrototype{Name: "ImDrawList_PrimReserve", OutType: c.Void, InTypes: _typs_PI32I32}
+	_func_ImDrawList_PrimUnreserve_                              = &c.FuncPrototype{Name: "ImDrawList_PrimUnreserve", OutType: c.Void, InTypes: _typs_PI32I32}
+	_func_ImDrawList_PrimVtx_                                    = &c.FuncPrototype{Name: "ImDrawList_PrimVtx", OutType: c.Void, InTypes: _typs_PVec2Vec2U32}
+	_func_ImDrawList_PrimWriteIdx_                               = &c.FuncPrototype{Name: "ImDrawList_PrimWriteIdx", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList_PrimWriteVtx_                               = &c.FuncPrototype{Name: "ImDrawList_PrimWriteVtx", OutType: c.Void, InTypes: _typs_PVec2Vec2U32}
+	_func_ImDrawList_PushClipRect_                               = &c.FuncPrototype{Name: "ImDrawList_PushClipRect", OutType: c.Void, InTypes: _typs_PVec2Vec2I32}
+	_func_ImDrawList_PushClipRectFullScreen_                     = &c.FuncPrototype{Name: "ImDrawList_PushClipRectFullScreen", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawList_PushTextureID_                              = &c.FuncPrototype{Name: "ImDrawList_PushTextureID", OutType: c.Void, InTypes: _typs_PP}
+	_func_ImDrawListSplitter_Clear_                              = &c.FuncPrototype{Name: "ImDrawListSplitter_Clear", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawListSplitter_ClearFreeMemory_                    = &c.FuncPrototype{Name: "ImDrawListSplitter_ClearFreeMemory", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawListSplitter_destroy_                            = &c.FuncPrototype{Name: "ImDrawListSplitter_destroy", OutType: c.Void, InTypes: _typs_P}
+	_func_ImDrawListSplitter_ImDrawListSplitter_                 = &c.FuncPrototype{Name: "ImDrawListSplitter_ImDrawListSplitter", OutType: c.Pointer, InTypes: nil}
+	_func_ImDrawListSplitter_Merge_                              = &c.FuncPrototype{Name: "ImDrawListSplitter_Merge", OutType: c.Void, InTypes: _typs_PP}
+	_func_ImDrawListSplitter_SetCurrentChannel_                  = &c.FuncPrototype{Name: "ImDrawListSplitter_SetCurrentChannel", OutType: c.Void, InTypes: _typs_PPI32}
+	_func_ImDrawListSplitter_Split_                              = &c.FuncPrototype{Name: "ImDrawListSplitter_Split", OutType: c.Void, InTypes: _typs_PPI32}
+	_func_ImFont_AddGlyph_                                       = &c.FuncPrototype{Name: "ImFont_AddGlyph", OutType: c.Void, InTypes: _typs_PPU16F32F32F32F32F32F32F32F32F32}
+	_func_ImFont_AddRemapChar_                                   = &c.FuncPrototype{Name: "ImFont_AddRemapChar", OutType: c.Void, InTypes: _typs_PU16U16I32}
+	_func_ImFont_BuildLookupTable_                               = &c.FuncPrototype{Name: "ImFont_BuildLookupTable", OutType: c.Void, InTypes: _typs_P}
+	_func_ImFont_CalcWordWrapPositionA_                          = &c.FuncPrototype{Name: "ImFont_CalcWordWrapPositionA", OutType: c.Pointer, InTypes: _typs_PF32PPF32}
+	_func_ImFont_ClearOutputData_                                = &c.FuncPrototype{Name: "ImFont_ClearOutputData", OutType: c.Void, InTypes: _typs_P}
+	_func_ImFont_destroy_                                        = &c.FuncPrototype{Name: "ImFont_destroy", OutType: c.Void, InTypes: _typs_P}
+	_func_ImFont_FindGlyph_                                      = &c.FuncPrototype{Name: "ImFont_FindGlyph", OutType: c.Pointer, InTypes: _typs_PU16}
+	_func_ImFont_FindGlyphNoFallback_                            = &c.FuncPrototype{Name: "ImFont_FindGlyphNoFallback", OutType: c.Pointer, InTypes: _typs_PU16}
+	_func_ImFont_GetCharAdvance_                                 = &c.FuncPrototype{Name: "ImFont_GetCharAdvance", OutType: c.F32, InTypes: _typs_PU16}
+	_func_ImFont_GetDebugName_                                   = &c.FuncPrototype{Name: "ImFont_GetDebugName", OutType: c.Pointer, InTypes: _typs_P}
+	_func_ImFont_GrowIndex_                                      = &c.FuncPrototype{Name: "ImFont_GrowIndex", OutType: c.Void, InTypes: _typs_PI32}
+	_func_ImFont_ImFont_                                         = &c.FuncPrototype{Name: "ImFont_ImFont", OutType: c.Pointer, InTypes: nil}
+	_func_ImFont_IsGlyphRangeUnused_                             = &c.FuncPrototype{Name: "ImFont_IsGlyphRangeUnused", OutType: c.I32, InTypes: _typs_PU32U32}
+	_func_ImFont_IsLoaded_                                       = &c.FuncPrototype{Name: "ImFont_IsLoaded", OutType: c.I32, InTypes: _typs_P}
+	_func_ImFont_RenderChar_                                     = &c.FuncPrototype{Name: "ImFont_RenderChar", OutType: c.Void, InTypes: _typs_PPF32Vec2U32U16}
+	_func_ImFont_RenderText_                                     = &c.FuncPrototype{Name: "ImFont_RenderText", OutType: c.Void, InTypes: _typs_PPF32Vec2U32Vec4PPF32I32}
+	_func_ImFont_SetGlyphVisible_                                = &c.FuncPrototype{Name: "ImFont_SetGlyphVisible", OutType: c.Void, InTypes: _typs_PU16I32}
+	_func_ImFontAtlas_AddCustomRectFontGlyph_                    = &c.FuncPrototype{Name: "ImFontAtlas_AddCustomRectFontGlyph", OutType: c.I32, InTypes: _typs_PPU16I32I32F32Vec2}
+	_func_ImFontAtlas_AddCustomRectRegular_                      = &c.FuncPrototype{Name: "ImFontAtlas_AddCustomRectRegular", OutType: c.I32, InTypes: _typs_PI32I32}
+	_func_ImFontAtlas_Build_                                     = &c.FuncPrototype{Name: "ImFontAtlas_Build", OutType: c.I32, InTypes: _typs_P}
+	_func_ImFontAtlas_CalcCustomRectUV_                          = &c.FuncPrototype{Name: "ImFontAtlas_CalcCustomRectUV", OutType: c.Void, InTypes: _typs_PPPP}
+	_func_ImFontAtlas_Clear_                                     = &c.FuncPrototype{Name: "ImFontAtlas_Clear", OutType: c.Void, InTypes: _typs_P}
+	_func_ImFontAtlas_ClearFonts_                                = &c.FuncPrototype{Name: "ImFontAtlas_ClearFonts", OutType: c.Void, InTypes: _typs_P}
+	_func_ImFontAtlas_ClearInputData_                            = &c.FuncPrototype{Name: "ImFontAtlas_ClearInputData", OutType: c.Void, InTypes: _typs_P}
+	_func_ImFontAtlas_ClearTexData_                              = &c.FuncPrototype{Name: "ImFontAtlas_ClearTexData", OutType: c.Void, InTypes: _typs_P}
+	_func_ImFontAtlas_GetCustomRectByIndex_                      = &c.FuncPrototype{Name: "ImFontAtlas_GetCustomRectByIndex", OutType: c.Pointer, InTypes: _typs_PI32}
+	_func_ImFontAtlas_IsBuilt_                                   = &c.FuncPrototype{Name: "ImFontAtlas_IsBuilt", OutType: c.I32, InTypes: _typs_P}
+	_func_ImFontAtlas_SetTexID_                                  = &c.FuncPrototype{Name: "ImFontAtlas_SetTexID", OutType: c.Void, InTypes: _typs_PP}
+	_func_ImFontAtlasCustomRect_destroy_                         = &c.FuncPrototype{Name: "ImFontAtlasCustomRect_destroy", OutType: c.Void, InTypes: _typs_P}
+	_func_ImFontAtlasCustomRect_ImFontAtlasCustomRect_           = &c.FuncPrototype{Name: "ImFontAtlasCustomRect_ImFontAtlasCustomRect", OutType: c.Pointer, InTypes: nil}
+	_func_ImFontAtlasCustomRect_IsPacked_                        = &c.FuncPrototype{Name: "ImFontAtlasCustomRect_IsPacked", OutType: c.I32, InTypes: _typs_P}
+	_func_ImFontGlyphRangesBuilder_AddChar_                      = &c.FuncPrototype{Name: "ImFontGlyphRangesBuilder_AddChar", OutType: c.Void, InTypes: _typs_PU16}
+	_func_ImFontGlyphRangesBuilder_AddRanges_                    = &c.FuncPrototype{Name: "ImFontGlyphRangesBuilder_AddRanges", OutType: c.Void, InTypes: _typs_PP}
+	_func_ImFontGlyphRangesBuilder_AddText_                      = &c.FuncPrototype{Name: "ImFontGlyphRangesBuilder_AddText", OutType: c.Void, InTypes: _typs_PPP}
+	_func_ImFontGlyphRangesBuilder_BuildRanges_                  = &c.FuncPrototype{Name: "ImFontGlyphRangesBuilder_BuildRanges", OutType: c.Void, InTypes: _typs_PP}
+	_func_ImFontGlyphRangesBuilder_Clear_                        = &c.FuncPrototype{Name: "ImFontGlyphRangesBuilder_Clear", OutType: c.Void, InTypes: _typs_P}
+	_func_ImFontGlyphRangesBuilder_destroy_                      = &c.FuncPrototype{Name: "ImFontGlyphRangesBuilder_destroy", OutType: c.Void, InTypes: _typs_P}
+	_func_ImFontGlyphRangesBuilder_GetBit_                       = &c.FuncPrototype{Name: "ImFontGlyphRangesBuilder_GetBit", OutType: c.I32, InTypes: _typs_PU64}
+	_func_ImFontGlyphRangesBuilder_ImFontGlyphRangesBuilder_     = &c.FuncPrototype{Name: "ImFontGlyphRangesBuilder_ImFontGlyphRangesBuilder", OutType: c.Pointer, InTypes: nil}
+	_func_ImFontGlyphRangesBuilder_SetBit_                       = &c.FuncPrototype{Name: "ImFontGlyphRangesBuilder_SetBit", OutType: c.Void, InTypes: _typs_PU64}
+	_func_ImGuiListClipper_Begin_                                = &c.FuncPrototype{Name: "ImGuiListClipper_Begin", OutType: c.Void, InTypes: _typs_PI32F32}
+	_func_ImGuiListClipper_destroy_                              = &c.FuncPrototype{Name: "ImGuiListClipper_destroy", OutType: c.Void, InTypes: _typs_P}
+	_func_ImGuiListClipper_End_                                  = &c.FuncPrototype{Name: "ImGuiListClipper_End", OutType: c.Void, InTypes: _typs_P}
+	_func_ImGuiListClipper_ImGuiListClipper_                     = &c.FuncPrototype{Name: "ImGuiListClipper_ImGuiListClipper", OutType: c.Pointer, InTypes: nil}
+	_func_ImGuiListClipper_IncludeRangeByIndices_                = &c.FuncPrototype{Name: "ImGuiListClipper_IncludeRangeByIndices", OutType: c.Void, InTypes: _typs_PI32I32}
+	_func_ImGuiListClipper_Step_                                 = &c.FuncPrototype{Name: "ImGuiListClipper_Step", OutType: c.I32, InTypes: _typs_P}
+	_func_ImGuiPlatformImeData_destroy_                          = &c.FuncPrototype{Name: "ImGuiPlatformImeData_destroy", OutType: c.Void, InTypes: _typs_P}
+	_func_ImGuiPlatformImeData_ImGuiPlatformImeData_             = &c.FuncPrototype{Name: "ImGuiPlatformImeData_ImGuiPlatformImeData", OutType: c.Pointer, InTypes: nil}
+	_func_ImGuiPlatformIO_destroy_                               = &c.FuncPrototype{Name: "ImGuiPlatformIO_destroy", OutType: c.Void, InTypes: _typs_P}
+	_func_ImGuiPlatformIO_ImGuiPlatformIO_                       = &c.FuncPrototype{Name: "ImGuiPlatformIO_ImGuiPlatformIO", OutType: c.Pointer, InTypes: nil}
+	_func_ImGuiPlatformMonitor_destroy_                          = &c.FuncPrototype{Name: "ImGuiPlatformMonitor_destroy", OutType: c.Void, InTypes: _typs_P}
+	_func_ImGuiPlatformMonitor_ImGuiPlatformMonitor_             = &c.FuncPrototype{Name: "ImGuiPlatformMonitor_ImGuiPlatformMonitor", OutType: c.Pointer, InTypes: nil}
+	_func_ImGuiStorage_BuildSortByKey_                           = &c.FuncPrototype{Name: "ImGuiStorage_BuildSortByKey", OutType: c.Void, InTypes: _typs_P}
+	_func_ImGuiStorage_Clear_                                    = &c.FuncPrototype{Name: "ImGuiStorage_Clear", OutType: c.Void, InTypes: _typs_P}
+	_func_ImGuiStorage_GetBool_                                  = &c.FuncPrototype{Name: "ImGuiStorage_GetBool", OutType: c.I32, InTypes: _typs_PU32I32}
+	_func_ImGuiStorage_GetFloat_                                 = &c.FuncPrototype{Name: "ImGuiStorage_GetFloat", OutType: c.F32, InTypes: _typs_PU32F32}
+	_func_ImGuiStorage_GetFloatRef_                              = &c.FuncPrototype{Name: "ImGuiStorage_GetFloatRef", OutType: c.Pointer, InTypes: _typs_PU32F32}
+	_func_ImGuiStorage_GetInt_                                   = &c.FuncPrototype{Name: "ImGuiStorage_GetInt", OutType: c.I32, InTypes: _typs_PU32I32}
+	_func_ImGuiStorage_GetIntRef_                                = &c.FuncPrototype{Name: "ImGuiStorage_GetIntRef", OutType: c.Pointer, InTypes: _typs_PU32I32}
+	_func_ImGuiStorage_GetVoidPtr_                               = &c.FuncPrototype{Name: "ImGuiStorage_GetVoidPtr", OutType: c.Pointer, InTypes: _typs_PU32}
+	_func_ImGuiStorage_GetVoidPtrRef_                            = &c.FuncPrototype{Name: "ImGuiStorage_GetVoidPtrRef", OutType: c.Pointer, InTypes: _typs_PU32P}
+	_func_ImGuiStorage_SetAllInt_                                = &c.FuncPrototype{Name: "ImGuiStorage_SetAllInt", OutType: c.Void, InTypes: _typs_PI32}
+	_func_ImGuiStorage_SetBool_                                  = &c.FuncPrototype{Name: "ImGuiStorage_SetBool", OutType: c.Void, InTypes: _typs_PU32I32}
+	_func_ImGuiStorage_SetFloat_                                 = &c.FuncPrototype{Name: "ImGuiStorage_SetFloat", OutType: c.Void, InTypes: _typs_PU32F32}
+	_func_ImGuiStorage_SetInt_                                   = &c.FuncPrototype{Name: "ImGuiStorage_SetInt", OutType: c.Void, InTypes: _typs_PU32I32}
+	_func_ImGuiStorage_SetVoidPtr_                               = &c.FuncPrototype{Name: "ImGuiStorage_SetVoidPtr", OutType: c.Void, InTypes: _typs_PU32P}
+	_func_ImGuiStoragePair_destroy_                              = &c.FuncPrototype{Name: "ImGuiStoragePair_destroy", OutType: c.Void, InTypes: _typs_P}
+	_func_ImGuiStoragePair_ImGuiStoragePair_Float_               = &c.FuncPrototype{Name: "ImGuiStoragePair_ImGuiStoragePair_Float", OutType: c.Pointer, InTypes: _typs_U32F32}
+	_func_ImGuiStoragePair_ImGuiStoragePair_Int_                 = &c.FuncPrototype{Name: "ImGuiStoragePair_ImGuiStoragePair_Int", OutType: c.Pointer, InTypes: _typs_U32I32}
+	_func_ImGuiStoragePair_ImGuiStoragePair_Ptr_                 = &c.FuncPrototype{Name: "ImGuiStoragePair_ImGuiStoragePair_Ptr", OutType: c.Pointer, InTypes: _typs_U32P}
+	_func_ImGuiTextBuffer_append_                                = &c.FuncPrototype{Name: "ImGuiTextBuffer_append", OutType: c.Void, InTypes: _typs_PPP}
+	_func_ImGuiTextBuffer_c_str_                                 = &c.FuncPrototype{Name: "ImGuiTextBuffer_c_str", OutType: c.Pointer, InTypes: _typs_P}
+	_func_ImGuiTextBuffer_clear_                                 = &c.FuncPrototype{Name: "ImGuiTextBuffer_clear", OutType: c.Void, InTypes: _typs_P}
+	_func_ImGuiTextBuffer_empty_                                 = &c.FuncPrototype{Name: "ImGuiTextBuffer_empty", OutType: c.I32, InTypes: _typs_P}
+	_func_ImGuiTextBuffer_end_                                   = &c.FuncPrototype{Name: "ImGuiTextBuffer_end", OutType: c.Pointer, InTypes: _typs_P}
+	_func_ImGuiTextBuffer_reserve_                               = &c.FuncPrototype{Name: "ImGuiTextBuffer_reserve", OutType: c.Void, InTypes: _typs_PI32}
+	_func_ImGuiTextBuffer_size_                                  = &c.FuncPrototype{Name: "ImGuiTextBuffer_size", OutType: c.I32, InTypes: _typs_P}
+	_func_ImGuiViewport_destroy_                                 = &c.FuncPrototype{Name: "ImGuiViewport_destroy", OutType: c.Void, InTypes: _typs_P}
+	_func_ImGuiViewport_GetCenter_                               = &c.FuncPrototype{Name: "ImGuiViewport_GetCenter", OutType: c.Void, InTypes: _typs_PP}
+	_func_ImGuiViewport_GetWorkCenter_                           = &c.FuncPrototype{Name: "ImGuiViewport_GetWorkCenter", OutType: c.Void, InTypes: _typs_PP}
+	_func_ImGuiViewport_ImGuiViewport_                           = &c.FuncPrototype{Name: "ImGuiViewport_ImGuiViewport", OutType: c.Pointer, InTypes: nil}
 )

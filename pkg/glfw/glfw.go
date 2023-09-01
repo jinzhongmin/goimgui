@@ -123,7 +123,7 @@ func SetErrorCallback(fn func(code int32, des string)) {
 			}
 		}
 		_ErrorCallback.CallbackFunc = fn
-		cfn_ptr = _ErrorCallback.Cfunc
+		cfn_ptr = _ErrorCallback.FuncPtr()
 	} else {
 		if _ErrorCallback != nil {
 			_ErrorCallback.CallbackCvt = nil
@@ -595,7 +595,7 @@ func (win *Window) SetWindowPosCallback(fn func(win *Window, xpos, ypos int32)) 
 		}
 
 		win.windowPosCallback.CallbackFunc = fn
-		cfn_ptr = win.windowPosCallback.Cfunc
+		cfn_ptr = win.windowPosCallback.FuncPtr()
 	} else { //remove callback
 		if win.windowPosCallback != nil {
 			win.windowPosCallback.CallbackCvt = nil
@@ -625,7 +625,7 @@ func (win *Window) SetWindowSizeCallback(fn func(win *Window, width, height int3
 			}
 		}
 		win.windowSizeCallback.CallbackFunc = fn
-		cfn_ptr = win.windowSizeCallback.Cfunc
+		cfn_ptr = win.windowSizeCallback.FuncPtr()
 	} else { //remove callback
 		if win.windowSizeCallback != nil {
 			win.windowSizeCallback.CallbackCvt = nil
@@ -653,7 +653,7 @@ func (win *Window) SetWindowCloseCallback(fn func(win *Window)) {
 			}
 		}
 		win.windowCloseCallback.CallbackFunc = fn
-		cfn_ptr = win.windowCloseCallback.Cfunc
+		cfn_ptr = win.windowCloseCallback.FuncPtr()
 	} else { //remove callback
 		if win.windowCloseCallback != nil {
 			win.windowCloseCallback.CallbackCvt = nil
@@ -681,7 +681,7 @@ func (win *Window) SetWindowRefreshCallback(fn func(win *Window)) {
 			}
 		}
 		win.windowRefreshCallback.CallbackFunc = fn
-		cfn_ptr = win.windowRefreshCallback.Cfunc
+		cfn_ptr = win.windowRefreshCallback.FuncPtr()
 	} else { //remove callback
 		if win.windowRefreshCallback != nil {
 			win.windowRefreshCallback.CallbackCvt = nil
@@ -710,7 +710,7 @@ func (win *Window) SetWindowFocusCallback(fn func(win *Window, focused bool)) {
 			}
 		}
 		win.windowFocusCallback.CallbackFunc = fn
-		cfn_ptr = win.windowFocusCallback.Cfunc
+		cfn_ptr = win.windowFocusCallback.FuncPtr()
 	} else { //remove callback
 		if win.windowFocusCallback != nil {
 			win.windowFocusCallback.CallbackCvt = nil
@@ -739,7 +739,7 @@ func (win *Window) SetWindowIconifyCallback(fn func(win *Window, iconified bool)
 			}
 		}
 		win.windowIconifyCallback.CallbackFunc = fn
-		cfn_ptr = win.windowIconifyCallback.Cfunc
+		cfn_ptr = win.windowIconifyCallback.FuncPtr()
 	} else { //remove callback
 		if win.windowIconifyCallback != nil {
 			win.windowIconifyCallback.CallbackCvt = nil
@@ -768,7 +768,7 @@ func (win *Window) SetWindowMaximizeCallback(fn func(win *Window, maximized bool
 			}
 		}
 		win.windowMaximizeCallback.CallbackFunc = fn
-		cfn_ptr = win.windowMaximizeCallback.Cfunc
+		cfn_ptr = win.windowMaximizeCallback.FuncPtr()
 	} else { //remove callback
 		if win.windowMaximizeCallback != nil {
 			win.windowMaximizeCallback.CallbackCvt = nil
@@ -798,7 +798,7 @@ func (win *Window) SetFramebufferSizeCallback(fn func(win *Window, width, height
 			}
 		}
 		win.framebufferSizeCallback.CallbackFunc = fn
-		cfn_ptr = win.framebufferSizeCallback.Cfunc
+		cfn_ptr = win.framebufferSizeCallback.FuncPtr()
 	} else { //remove callback
 		if win.framebufferSizeCallback != nil {
 			win.framebufferSizeCallback.CallbackCvt = nil
@@ -828,7 +828,7 @@ func (win *Window) SetWindowContentScaleCallback(fn func(win *Window, xscale, ys
 			}
 		}
 		win.windowContentScaleCallback.CallbackFunc = fn
-		cfn_ptr = win.windowContentScaleCallback.Cfunc
+		cfn_ptr = win.windowContentScaleCallback.FuncPtr()
 	} else { //remove callback
 		if win.windowContentScaleCallback != nil {
 			win.windowContentScaleCallback.CallbackCvt = nil

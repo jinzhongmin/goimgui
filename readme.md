@@ -10,25 +10,21 @@ import (
 
 	"github.com/jinzhongmin/goffi/pkg/c"
 	"github.com/jinzhongmin/goimgui/pkg/gi"
-	"github.com/jinzhongmin/goimgui/pkg/glfw"
 )
 
 func main() {
 	runtime.LockOSThread()
+	gi.QuickInitLibraryGlfw("glfw3.dll", "cimgui.dll", c.ModeLazy)
 
-    //get from  github.com/jinzhongmin/libgoimgui
-	gi.InitLaunch("glfw3.dll", "cimgui.dll", c.ModeLazy)
-    
-	win := glfw.CreateWindow(900, 600, "hello", nil, nil)
-	win.MakeContextCurrent()
-
-	world := "你好世界"
-
-	gi.QuickLaunch(win, func(w, h int32) bool {
-		gi.Begin(world, nil, 0)
-
-		gi.End()
-		return true
+	_, Str := gi.NewMyStrs()
+	gi.QuickLaunchGlfw("hello", 900, 600, func(io *gi.QuickLaunchGlfwIO) {
+		gi.Begin(Str("你好 imgui"), nil, 0)
+		{
+			if gi.Button(Str("关闭主窗口(close main window)"), gi.ImVec2XY(240, 35)) {
+				io.Close()
+			}
+			gi.End()
+		}
 	})
 }
 
