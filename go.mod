@@ -3,7 +3,7 @@ module github.com/jinzhongmin/goimgui
 go 1.20
 
 require (
-	github.com/jinzhongmin/goffi v0.0.0-20230831233434-2f5011837bfa
+	github.com/jinzhongmin/goffi v0.0.0-20230928233304-3a627488828c
 	github.com/jinzhongmin/usf v0.0.0-20230831102133-dbf66a6888b9
 )
 
