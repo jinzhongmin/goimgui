@@ -17,7 +17,7 @@ func QuickInitLibraryGlfw(glfwlib, cimguilib string, mod c.LibMode) {
 	glfw.DefaultWindowHints()
 	glfw.InitGL()
 	glfw.SetErrorCallback(func(code int32, des string) { log.Printf("error: %d, %s \n", code, des) })
-	InitLib("cimgui.dll", mod)
+	InitLib(cimguilib, mod)
 }
 
 type QuickLaunchGlfwIO struct {
