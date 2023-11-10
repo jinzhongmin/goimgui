@@ -1,7 +1,6 @@
 package gi
 
 import (
-	"image"
 	"log"
 	"os"
 	"time"
@@ -48,7 +47,7 @@ func (io *QuickLaunchGlfwIO) Close() {
 	io.shouldClose = true
 }
 
-func QuickLaunchGlfw(title string, width, height int, loop func(io *QuickLaunchGlfwIO)) {
+func QuickLaunchGlfw(title string, width, height int, init func(), loop func(io *QuickLaunchGlfwIO)) {
 	win := glfw.CreateWindow(int32(width), int32(height), title, nil, nil)
 	win.MakeContextCurrent()
 	defer win.DestroyWindow()
@@ -58,6 +57,10 @@ func QuickLaunchGlfw(title string, width, height int, loop func(io *QuickLaunchG
 
 	ImGui_ImplGlfw_InitForOpenGL(win.CPtr(), true)
 	ImGui_ImplOpenGL3_Init(GLSLVer_3_2_Plus)
+
+	if init != nil {
+		init()
+	}
 
 	chanWait := make(chan bool, 1)
 	{ //for limit fps
@@ -98,7 +101,7 @@ func QuickLaunchGlfw(title string, width, height int, loop func(io *QuickLaunchG
 		Render()
 		gl.Viewport(0, 0, io.currWinW, io.currWinH)
 		gl.ClearColor(io.bgR, io.bgG, io.bgB, io.bgA)
-		gl.Clear(gl.GLbitfield_COLOR_BUFFER_BIT)
+		gl.Clear(gl.BufferBitColor)
 
 		ImGui_ImplOpenGL3_RenderDrawData(GetDrawData())
 		win.SwapBuffers()
@@ -117,24 +120,44 @@ func QuickLaunchGlfw(title string, width, height int, loop func(io *QuickLaunchG
 type ImageGlTexure struct {
 	tex   uint32
 	texID ImTextureID
-	img   *image.RGBA
+	ptr   unsafe.Pointer
 }
 
-func NewImageGlTexureFromRGBA(rgba *image.RGBA) *ImageGlTexure {
+//  var imagePtrHolder = make(map[unsafe.Pointer]interface{})
+//
+//	func NewImageGlTexureFromRGBA(rgba *image.RGBA) *ImageGlTexure {
+//		tex := gl.GenTextures(1)[0]
+//		gl.BindTexture(gl.GLTexTag_2D, tex)
+//		ptr := unsafe.Pointer(&rgba.Pix[0])
+//		imagePtrHolder[ptr] = rgba
+//		GL_LINEAR := int32(0x2601)
+//		GL_CLAMP_TO_EDGE := int32(0x812F)
+//		gl.TexParameteri(gl.GLTexTag_2D, gl.GLTexPName_MIN_FILTER, GL_LINEAR)
+//		gl.TexParameteri(gl.GLTexTag_2D, gl.GLTexPName_MAG_FILTER, GL_LINEAR)
+//		gl.TexParameteri(gl.GLTexTag_2D, gl.GLTexPName_WRAP_S, GL_CLAMP_TO_EDGE)
+//		gl.TexParameteri(gl.GLTexTag_2D, gl.GLTexPName_WRAP_T, GL_CLAMP_TO_EDGE)
+//		gl.TexImage2D(gl.GLTexTag_2D, 0, gl.GLTexInterFmt_RGBA,
+//			uint32(rgba.Rect.Dx()), uint32(rgba.Rect.Dy()), 0, gl.GLTexDataFmt_RGBA, gl.GLTexDataType_UNSIGNED_BYTE, ptr)
+//			_tex := uint64(tex)
+//			return &ImageGlTexure{tex: tex, texID: *(*ImTextureID)(unsafe.Pointer(&_tex)), ptr: ptr}
+//		}
+
+func NewImageGlTexure(ptr unsafe.Pointer, width, height uint32,
+	interFmt gl.TexFormat, dataFmt gl.TexFormat, dataType gl.TexDataType) *ImageGlTexure {
 	tex := gl.GenTextures(1)[0]
-	gl.BindTexture(gl.GLTexTag_2D, tex)
+	gl.BindTexture(gl.TexTag2D, tex)
 
 	GL_LINEAR := int32(0x2601)
 	GL_CLAMP_TO_EDGE := int32(0x812F)
-	gl.TexParameteri(gl.GLTexTag_2D, gl.GLTexPName_MIN_FILTER, GL_LINEAR)
-	gl.TexParameteri(gl.GLTexTag_2D, gl.GLTexPName_MAG_FILTER, GL_LINEAR)
-	gl.TexParameteri(gl.GLTexTag_2D, gl.GLTexPName_WRAP_S, GL_CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.GLTexTag_2D, gl.GLTexPName_WRAP_T, GL_CLAMP_TO_EDGE)
-	gl.TexImage2D(gl.GLTexTag_2D, 0, gl.GLTexInterFmt_RGBA,
-		uint32(rgba.Rect.Dx()), uint32(rgba.Rect.Dy()), 0, gl.GLTexDataFmt_RGBA, gl.GLTexDataType_UNSIGNED_BYTE, unsafe.Pointer(&rgba.Pix[0]))
+	gl.TexParameteri(gl.TexTag2D, gl.TexParamMinFilter, GL_LINEAR)
+	gl.TexParameteri(gl.TexTag2D, gl.TexParamMagFilter, GL_LINEAR)
+	gl.TexParameteri(gl.TexTag2D, gl.TexParamWrapS, GL_CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TexTag2D, gl.TexParamWrapT, GL_CLAMP_TO_EDGE)
+	gl.PixelStorei(gl.ParamUnpackAlignment, 1)
+	gl.TexImage2D(gl.TexTag2D, 0, interFmt, width, height, 0, dataFmt, dataType, ptr)
 
 	_tex := uint64(tex)
-	return &ImageGlTexure{tex: tex, texID: *(*ImTextureID)(unsafe.Pointer(&_tex)), img: rgba}
+	return &ImageGlTexure{tex: tex, texID: *(*ImTextureID)(unsafe.Pointer(&_tex)), ptr: ptr}
 }
 func (imTex *ImageGlTexure) Image(size ImVec2) {
 	ImageDefault(imTex.texID, size)
