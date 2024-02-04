@@ -48,6 +48,11 @@ func (vec2 *ImVec2) AddVec2(v ImVec2) *ImVec2 {
 	vec2.Y += v.Y
 	return vec2
 }
+func (vec2 *ImVec2) SubtractVec2(v ImVec2) *ImVec2 {
+	vec2.X -= v.X
+	vec2.Y -= v.Y
+	return vec2
+}
 func (vec2 *ImVec2) Mul(i float32) *ImVec2 {
 	vec2.X *= i
 	vec2.Y *= i
@@ -84,6 +89,8 @@ func NewImVec4Float(x, y, z, w float32) *ImVec4 {
 	p := giLib.Call(_func_ImVec4_ImVec4_Float_, []interface{}{&x, &y, &z, &w})
 	return (*ImVec4)(p.PtrFree())
 }
+
+func ImVec4XYZW(x, y, z, w float32) ImVec4 { return ImVec4{X: x, Y: y, Z: z, W: w} }
 
 // Context creation and access
 //
@@ -501,24 +508,18 @@ func SetNextWindowSize(size ImVec2, cond ImGuiCond) {
 	giLib.Call(_func_igSetNextWindowSize_, []interface{}{&size, &cond})
 }
 
+// typedef void (*ImGuiSizeCallback)(ImGuiSizeCallbackData* data);
+var ImGuiSizeCallbackPrototype = c.DefineCallbackPrototype(c.AbiDefault, c.Void, []c.Type{c.Pointer})
+
 // CIMGUI_API void igSetNextWindowSizeConstraints(const ImVec2 size_min,const ImVec2 size_max,ImGuiSizeCallback custom_callback,void* custom_callback_data);
 //
 // IMGUI_API void SetNextWindowSizeConstraints(const ImVec2& size_min, const ImVec2& size_max, ImGuiSizeCallback custom_callback = NULL, void* custom_callback_data = NULL);
 //
 // set next window size limits. use -1,-1 on either X/Y axis to preserve the current size. Sizes will be rounded down. Use callback to apply non-trivial programmatic constraints.
-func SetNextWindowSizeConstraints(size_min ImVec2, size_max ImVec2, callback *c.Callback) {
+func SetNextWindowSizeConstraints(size_min ImVec2, size_max ImVec2, imGuiSizeCallback *c.Callback) {
 	fn, data := unsafe.Pointer(nil), unsafe.Pointer(nil)
-	if callback != nil {
-		if callback.CallbackCvt == nil {
-			callback.CallbackCvt = func(cb *c.Callback, args []*c.Value, ret *c.Value) {
-				p := (*ImGuiSizeCallbackData)(args[0].Ptr())
-				fn := cb.CallbackFunc.(func(*ImGuiSizeCallbackData))
-				if fn != nil {
-					fn(p)
-				}
-			}
-		}
-		fn = callback.FuncPtr()
+	if imGuiSizeCallback != nil {
+		fn = imGuiSizeCallback.CFuncPtr()
 	}
 	giLib.Call(_func_igSetNextWindowSizeConstraints_, []interface{}{&size_min, &size_max, &fn, &data})
 }
@@ -1479,7 +1480,7 @@ func Image(user_texture_id ImTextureID, size, uv0, uv1 ImVec2, tint_col, border_
 //
 // IMGUI_API void Image(ImTextureID user_texture_id, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
 func ImageDefault(user_texture_id ImTextureID, size ImVec2) {
-	giLib.Call(_func_igImage_, []interface{}{&user_texture_id, &size, _vec2ZeroPtr(), _vec2onesPtr(), _vec4OnesPtr(), _vec4ZeroPtr()})
+	giLib.Call(_func_igImage_, []interface{}{&user_texture_id, &size, _vec2ZeroPtr(), _vec2OnesPtr(), _vec4OnesPtr(), _vec4ZeroPtr()})
 }
 
 // CIMGUI_API bool igImageButton(const char* str_id,ImTextureID user_texture_id,const ImVec2 size,const ImVec2 uv0,const ImVec2 uv1,const ImVec4 bg_col,const ImVec4 tint_col);
@@ -1493,7 +1494,7 @@ func ImageButton(label *c.Str, user_texture_id ImTextureID, size, uv0, uv1 ImVec
 //
 // IMGUI_API bool ImageButton(const char* str_id, ImTextureID user_texture_id, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
 func ImageButtonDefault(label *c.Str, user_texture_id ImTextureID, size ImVec2) (click bool) {
-	return giLib.Call(_func_igImageButton_, []interface{}{label.AddrPtr(), &user_texture_id, &size, _vec2ZeroPtr(), _vec2onesPtr(), _vec4OnesPtr(), _vec4ZeroPtr()}).BoolFree()
+	return giLib.Call(_func_igImageButton_, []interface{}{label.AddrPtr(), &user_texture_id, &size, _vec2ZeroPtr(), _vec2OnesPtr(), _vec4ZeroPtr(), _vec4OnesPtr()}).BoolFree()
 }
 
 // Widgets: Combo Box (Dropdown)
@@ -1771,32 +1772,33 @@ func VSliderScalar(label *c.Str, size ImVec2, dataType ImGuiDataType, listHead i
 // - Most of the ImGuiInputTextFlags flags are only useful for InputText() and not for InputFloatX, InputIntX, InputDouble etc.
 
 // typedef int (*ImGuiInputTextCallback)(ImGuiInputTextCallbackData* data);    // Callback function for ImGui::InputText()
-func NewInputTextCallback(fn func(data *ImGuiInputTextCallbackData) int32) *c.Callback {
-	cb := c.NewCallback(c.AbiDefault, c.I32, []c.Type{c.Pointer})
-	checkInputTextCallback(cb)
-	cb.CallbackFunc = fn
-	return cb
-}
+// func NewInputTextCallback(fn func(data *ImGuiInputTextCallbackData) int32) *c.Callback {
+// 	cb := c.NewCallback(c.AbiDefault, c.I32, []c.Type{c.Pointer})
+// 	checkInputTextCallback(cb)
+// 	cb.CallbackFunc = fn
+// 	return cb
+// }
+// func checkInputTextCallback(callback *c.Callback) {
+// 	if callback == nil {
+// 		return
+// 	}
+// 	if callback.CallbackCvt == nil {
+// 		creater := func() func(cb *c.Callback, args []*c.Value, ret *c.Value) {
+// 			return func(cb *c.Callback, args []*c.Value, ret *c.Value) {
+// 				data := (*ImGuiInputTextCallbackData)(args[0].Ptr())
+// 				fn := cb.CallbackFunc.(func(*ImGuiInputTextCallbackData) int32)
+// 				if fn != nil {
+// 					i := fn(data)
+// 					ret.SetI32(i)
+// 				}
+// 			}
+// 		}
+// 		callback.CallbackCvt = creater()
+// 	}
+// }
 
-func checkInputTextCallback(callback *c.Callback) {
-	if callback == nil {
-		return
-	}
-	if callback.CallbackCvt == nil {
-
-		creater := func() func(cb *c.Callback, args []*c.Value, ret *c.Value) {
-			return func(cb *c.Callback, args []*c.Value, ret *c.Value) {
-				data := (*ImGuiInputTextCallbackData)(args[0].Ptr())
-				fn := cb.CallbackFunc.(func(*ImGuiInputTextCallbackData) int32)
-				if fn != nil {
-					i := fn(data)
-					ret.SetI32(i)
-				}
-			}
-		}
-		callback.CallbackCvt = creater()
-	}
-}
+// typedef void (*ImGuiSizeCallback)(ImGuiSizeCallbackData* data);
+var ImGuiInputTextCallbackPrototype = c.DefineCallbackPrototype(c.AbiDefault, c.I32, []c.Type{c.Pointer})
 
 // CIMGUI_API bool igInputText(const char* label,char* buf,size_t buf_size,ImGuiInputTextFlags flags,ImGuiInputTextCallback callback,void* user_data);
 //
@@ -1805,13 +1807,12 @@ func checkInputTextCallback(callback *c.Callback) {
 // callback : func NewInputTextCallback(fn func(data *ImGuiInputTextCallbackData) int32)
 //
 // IMGUI_API bool InputText(const char* label, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-func InputText(label *c.Str, buf *c.Str, flag ImGuiInputTextFlags, callback *c.Callback) (act bool) {
+func InputText(label *c.Str, buf *c.Str, flag ImGuiInputTextFlags, imGuiInputTextCallback *c.Callback) (act bool) {
 	valMaxLen := buf.Cap() - 1
 
 	cbPtr := unsafe.Pointer(nil)
-	if callback != nil {
-		checkInputTextCallback(callback)
-		cbPtr = callback.FuncPtr()
+	if imGuiInputTextCallback != nil {
+		cbPtr = imGuiInputTextCallback.CFuncPtr()
 	}
 	return giLib.Call(_func_igInputText_, []interface{}{label.AddrPtr(), buf.AddrPtr(), &valMaxLen, &flag, &cbPtr, _ptrZeroPtr()}).BoolFree()
 }
@@ -1819,13 +1820,13 @@ func InputText(label *c.Str, buf *c.Str, flag ImGuiInputTextFlags, callback *c.C
 // CIMGUI_API bool igInputTextMultiline(const char* label,char* buf,size_t buf_size,const ImVec2 size,ImGuiInputTextFlags flags,ImGuiInputTextCallback callback,void* user_data);
 //
 // IMGUI_API bool InputTextMultiline(const char* label, char* buf, size_t buf_size, const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-func InputTextMultiline(label *c.Str, buf *c.Str, size ImVec2, flag ImGuiInputTextFlags, callback *c.Callback) (act bool) {
+func InputTextMultiline(label *c.Str, buf *c.Str, size ImVec2, flag ImGuiInputTextFlags, imGuiInputTextCallback *c.Callback) (act bool) {
 	valMaxLen := buf.Cap() - 1
 
 	cbPtr, data := unsafe.Pointer(nil), unsafe.Pointer(nil)
-	if callback != nil {
-		checkInputTextCallback(callback)
-		cbPtr = callback.FuncPtr()
+	if imGuiInputTextCallback != nil {
+		// checkInputTextCallback(callback)
+		cbPtr = imGuiInputTextCallback.CFuncPtr()
 	}
 	return giLib.Call(_func_igInputTextMultiline_, []interface{}{label.AddrPtr(), buf.AddrPtr(), &valMaxLen, &size, &flag, &cbPtr, &data}).BoolFree()
 }
@@ -1833,13 +1834,13 @@ func InputTextMultiline(label *c.Str, buf *c.Str, size ImVec2, flag ImGuiInputTe
 // CIMGUI_API bool igInputTextWithHint(const char* label,const char* hint,char* buf,size_t buf_size,ImGuiInputTextFlags flags,ImGuiInputTextCallback callback,void* user_data);
 //
 // IMGUI_API bool InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-func InputTextWithHint(label *c.Str, hint *c.Str, buf *c.Str, flag ImGuiInputTextFlags, callback *c.Callback) (act bool) {
+func InputTextWithHint(label *c.Str, hint *c.Str, buf *c.Str, flag ImGuiInputTextFlags, imGuiInputTextCallback *c.Callback) (act bool) {
 	valMaxLen := buf.Cap() - 1
 
 	cb := unsafe.Pointer(nil)
-	if callback != nil {
-		checkInputTextCallback(callback)
-		cb = callback.FuncPtr()
+	if imGuiInputTextCallback != nil {
+		// checkInputTextCallback(callback)
+		cb = imGuiInputTextCallback.CFuncPtr()
 	}
 
 	return giLib.Call(_func_igInputTextWithHint_, []interface{}{label.AddrPtr(), hint.AddrPtr(), buf.AddrPtr(), &valMaxLen, &flag, &cb, _ptrZeroPtr()}).BoolFree()
@@ -2067,7 +2068,7 @@ func GetTreeNodeToLabelSpacing() float32 {
 // IMGUI_API bool CollapsingHeader(const char* label, ImGuiTreeNodeFlags flags = 0);
 //
 // if returning 'true' the header is open. doesn't indent nor push on ID stack. user doesn't have to call TreePop().
-func CollapsingHeaderTreeNodeFlags(label *c.Str, flag ImGuiTreeNodeFlags) bool {
+func CollapsingHeader(label *c.Str, flag ImGuiTreeNodeFlags) bool {
 	return giLib.Call(_func_igCollapsingHeader_TreeNodeFlags_, []interface{}{label.AddrPtr(), &flag}).BoolFree()
 }
 
@@ -2076,7 +2077,7 @@ func CollapsingHeaderTreeNodeFlags(label *c.Str, flag ImGuiTreeNodeFlags) bool {
 // IMGUI_API bool CollapsingHeader(const char* label, bool* p_visible, ImGuiTreeNodeFlags flags = 0);
 //
 // when 'p_visible != NULL': if '*p_visible==true' display an additional small close button on upper right of the header which will set the bool to false when clicked, if '*p_visible==false' don't display the header.
-func CollapsingHeaderBoolPtr(label *c.Str, visible *c.Bool, flag ImGuiTreeNodeFlags) bool {
+func CollapsingHeaderRefVisible(label *c.Str, visible *c.Bool, flag ImGuiTreeNodeFlags) bool {
 	return giLib.Call(_func_igCollapsingHeader_BoolPtr_, []interface{}{label.AddrPtr(), &visible, &flag}).BoolFree()
 }
 
@@ -2205,36 +2206,41 @@ func PlotLinesDefault(label *c.Str, values []float32) {
 		overlay_text.AddrPtr(), &scale_min, &scale_max, &graph_size, &stride})
 }
 
+// float(*values_getter)(void* data,int idx)
+var ValuesGetterPrototype = c.DefineCallbackPrototype(c.AbiDefault, c.F32, []c.Type{c.Pointer, c.I32})
+
 // fn: *[]int,  *[]float32 ... any slice pointer
-func NewPlotGetter(fn func(data unsafe.Pointer, idx int32) float32) *c.Callback {
-	cb := c.NewCallback(c.AbiDefault, c.F32, []c.Type{c.Pointer, c.I32})
-	cb.CallbackFunc = fn
-	cb.CallbackCvt = nil
-	return cb
-}
-func checkPlotGetter(callback *c.Callback) {
-	if callback.CallbackCvt == nil {
-		callback.CallbackCvt = func(cb *c.Callback, args []*c.Value, ret *c.Value) {
-			data := args[0].Ptr()
-			idx := args[1].I32()
-			_fn, ok := cb.CallbackFunc.(func(data unsafe.Pointer, idx int32) float32)
-			if ok {
-				ret.SetF32(_fn(data, idx))
-			}
-		}
-	}
-}
+// func NewPlotGetter(fn func(data unsafe.Pointer, idx int32) float32) *c.Callback {
+// 	cb := c.NewCallback(c.AbiDefault, c.F32, []c.Type{c.Pointer, c.I32})
+// 	cb.CallbackFunc = fn
+// 	cb.CallbackCvt = nil
+// 	return cb
+// }
+// func checkPlotGetter(callback *c.Callback) {
+// 	if callback.CallbackCvt == nil {
+// 		callback.CallbackCvt = func(cb *c.Callback, args []*c.Value, ret *c.Value) {
+// 			data := args[0].Ptr()
+// 			idx := args[1].I32()
+// 			_fn, ok := cb.CallbackFunc.(func(data unsafe.Pointer, idx int32) float32)
+// 			if ok {
+// 				ret.SetF32(_fn(data, idx))
+// 			}
+// 		}
+// 	}
+// }
 
 // CIMGUI_API void igPlotLines_FnFloatPtr(const char* label,float(*values_getter)(void* data,int idx),void* data,int values_count,int values_offset,const char* overlay_text,float scale_min,float scale_max,ImVec2 graph_size);
 //
 // IMGUI_API void PlotLines(const char* label, float(*values_getter)(void* data, int idx), void* data, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2(0, 0));
 //
 // xAxis: []int{},   []float32{}  .... any Slice
-func PlotLinesByGetter(label *c.Str, valsGetter *c.Callback, xAxis interface{}, offset int32,
+func PlotLinesByGetter(label *c.Str, valuesGetter *c.Callback, xAxis interface{}, offset int32,
 	overlay_text *c.Str, scale_min, scale_max float32, graph_size ImVec2) {
 
-	checkPlotGetter(valsGetter)
-	getter := valsGetter.FuncPtr()
+	getter := unsafe.Pointer(nil)
+	if valuesGetter != nil {
+		getter = valuesGetter.CFuncPtr()
+	}
 
 	dataPtr := usf.AddrOf(xAxis)
 	_, _dataLen, _ := usf.UnwarpSlice(dataPtr)
@@ -2248,9 +2254,12 @@ func PlotLinesByGetter(label *c.Str, valsGetter *c.Callback, xAxis interface{}, 
 // IMGUI_API void PlotLines(const char* label, float(*values_getter)(void* data, int idx), void* data, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2(0, 0));
 //
 // xAxis: []int{},   []float32{}  .... any Slice
-func PlotLinesByGetterDefault(label *c.Str, valsGetter *c.Callback, xAxis interface{}) {
-	checkPlotGetter(valsGetter)
-	getter := valsGetter.FuncPtr()
+func PlotLinesByGetterDefault(label *c.Str, valuesGetter *c.Callback, xAxis interface{}) {
+	getter := unsafe.Pointer(nil)
+	if valuesGetter != nil {
+		getter = valuesGetter.CFuncPtr()
+	}
+
 	overlay_text := (*c.Str)(nil)
 	scale_min, scale_max := float32(math.MaxFloat32), float32(math.MaxFloat32)
 	offset, graph_size := int32(0), ImVec2XY(0, 0)
@@ -2289,11 +2298,13 @@ func PlotHistogramDefault(label *c.Str, values []float32) {
 // IMGUI_API void PlotHistogram(const char* label, float(*values_getter)(void* data, int idx), void* data, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2(0, 0));
 //
 // xAxis: []int{},   []float32{}  .... any Slice
-func PlotHistogramByGetter(label *c.Str, valsGetter *c.Callback, xAxis interface{}, offset int32,
+func PlotHistogramByGetter(label *c.Str, valuesGetter *c.Callback, xAxis interface{}, offset int32,
 	overlay_text *c.Str, scale_min, scale_max float32, graph_size ImVec2) {
 
-	checkPlotGetter(valsGetter)
-	getter := valsGetter.FuncPtr()
+	getter := unsafe.Pointer(nil)
+	if valuesGetter != nil {
+		getter = valuesGetter.CFuncPtr()
+	}
 
 	dataPtr := usf.AddrOf(xAxis)
 	_, _dataLen, _ := usf.UnwarpSlice(dataPtr)
@@ -2308,9 +2319,11 @@ func PlotHistogramByGetter(label *c.Str, valsGetter *c.Callback, xAxis interface
 // IMGUI_API void PlotHistogram(const char* label, float(*values_getter)(void* data, int idx), void* data, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2(0, 0));
 //
 // xAxis: []int{},   []float32{}  .... any Slice
-func PlotHistogramByGetterDefault(label *c.Str, valsGetter *c.Callback, xAxis interface{}) {
-	checkPlotGetter(valsGetter)
-	getter := valsGetter.FuncPtr()
+func PlotHistogramByGetterDefault(label *c.Str, valuesGetter *c.Callback, xAxis interface{}) {
+	getter := unsafe.Pointer(nil)
+	if valuesGetter != nil {
+		getter = valuesGetter.CFuncPtr()
+	}
 	offset, overlay_text, scale_min, scale_max := int32(0), (*c.Str)(nil), float32(math.MaxFloat32), float32(math.MaxFloat32)
 	graph_size := ImVec2XY(0, 0)
 	dataPtr := usf.AddrOf(xAxis)
@@ -3065,8 +3078,9 @@ func BeginDragDropSource(flags ImGuiDragDropFlags) bool {
 // IMGUI_API bool SetDragDropPayload(const char* type, const void* data, size_t sz, ImGuiCond cond = 0);
 //
 // type is a user defined string of maximum 32 characters. Strings starting with '_' are reserved for dear imgui internal types. Data is copied and held by imgui. Return true when payload has been accepted.
-func SetDragDropPayload(typ *c.Str, data unsafe.Pointer, size uint64, cond ImGuiCond) bool {
-	return giLib.Call(_func_igSetDragDropPayload_, []interface{}{typ.AddrPtr(), &data, &size, &cond}).BoolFree()
+func SetDragDropPayload(typ *c.Str, anyPtr interface{}, size uint64, cond ImGuiCond) bool {
+	ptr := usf.AddrOf(anyPtr)
+	return giLib.Call(_func_igSetDragDropPayload_, []interface{}{typ.AddrPtr(), &ptr, &size, &cond}).BoolFree()
 }
 
 // CIMGUI_API void igEndDragDropSource(void);
@@ -3093,6 +3107,8 @@ func BeginDragDropTarget() bool {
 func AcceptDragDropPayload(typ *c.Str, flags ImGuiDragDropFlags) *ImGuiPayload {
 	return (*ImGuiPayload)(giLib.Call(_func_igAcceptDragDropPayload_, []interface{}{typ.AddrPtr(), &flags}).PtrFree())
 }
+
+func (payload ImGuiPayload) Pointer() unsafe.Pointer { return unsafe.Pointer(payload.Data) }
 
 // CIMGUI_API void igEndDragDropTarget(void);
 //
@@ -4947,7 +4963,7 @@ func (dl *ImDrawList) AddImage(user_texture_id ImTextureID, p_min ImVec2, p_max 
 //
 // IMGUI_API void  AddImage(ImTextureID user_texture_id, const ImVec2& p_min, const ImVec2& p_max, const ImVec2& uv_min = ImVec2(0, 0), const ImVec2& uv_max = ImVec2(1, 1), ImU32 col = IM_COL32_WHITE);
 func (dl *ImDrawList) AddImageDefault(user_texture_id ImTextureID, p_min ImVec2, p_max ImVec2) {
-	uv_min, uv_max, col := _vec2ZeroPtr(), _vec2onesPtr(), uint32(0xFFFFFFFF)
+	uv_min, uv_max, col := _vec2ZeroPtr(), _vec2OnesPtr(), uint32(0xFFFFFFFF)
 	giLib.Call(_func_ImDrawList_AddImage_, []interface{}{&dl, &user_texture_id, &p_min, &p_max, uv_min, uv_max, &col})
 }
 
@@ -4962,7 +4978,7 @@ func (dl *ImDrawList) AddImageQuad(user_texture_id ImTextureID, p1 ImVec2, p2 Im
 //
 // IMGUI_API void  AddImageQuad(ImTextureID user_texture_id, const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, const ImVec2& uv1 = ImVec2(0, 0), const ImVec2& uv2 = ImVec2(1, 0), const ImVec2& uv3 = ImVec2(1, 1), const ImVec2& uv4 = ImVec2(0, 1), ImU32 col = IM_COL32_WHITE);
 func (dl *ImDrawList) AddImageQuadDefault(user_texture_id ImTextureID, p1 ImVec2, p2 ImVec2, p3 ImVec2, p4 ImVec2) {
-	uv1, uv2, uv3, uv4, col := _vec2ZeroPtr(), _vec2_10Ptr(), _vec2onesPtr(), _vec2_01Ptr(), uint32(0xFFFFFFFF)
+	uv1, uv2, uv3, uv4, col := _vec2ZeroPtr(), _vec2_10Ptr(), _vec2OnesPtr(), _vec2_01Ptr(), uint32(0xFFFFFFFF)
 	giLib.Call(_func_ImDrawList_AddImageQuad_, []interface{}{&dl, &user_texture_id, &p1, &p2, &p3, &p4, uv1, uv2, uv3, uv4, &col})
 }
 

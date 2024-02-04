@@ -221,6 +221,14 @@ func TexImage2D(target TexTag, level TexLevel, internalFormat TexFormat,
 		[]interface{}{&target, &level, &internalFormat, &width, &height, &border, &dataFmt, &dataTyp, &data})
 }
 
+var _func_glTexSubImage2D_ = &c.FuncPrototype{Name: "glTexSubImage2D", OutType: c.Void, InTypes: []c.Type{c.I32, c.I32, c.I32, c.I32, c.U32, c.U32, c.I32, c.I32, c.Pointer}}
+
+func TexSubImage2D(target TexTag, level TexLevel, xOffset, yOffset int32,
+	width, height uint32, dataFmt TexFormat, dataTyp TexDataType, data unsafe.Pointer) {
+	_GLLib.Call(_addr(_func_glTexSubImage2D_),
+		[]interface{}{&target, &level, &xOffset, &yOffset, &width, &height, &dataFmt, &dataTyp, &data})
+}
+
 var _func_glGenerateMipmap_ = &c.FuncPrototype{Name: "glGenerateMipmap", OutType: c.Void, InTypes: []c.Type{c.I32}}
 
 func GenerateMipmap(target TexTag) {

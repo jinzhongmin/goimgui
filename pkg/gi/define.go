@@ -3248,11 +3248,15 @@ func _boolFalsePtr() unsafe.Pointer { return unsafe.Pointer(&C.__i32_false) }
 func _u32ZeroPtr() unsafe.Pointer   { return unsafe.Pointer(&C.__u32_zero) }
 func _ptrZeroPtr() unsafe.Pointer   { return unsafe.Pointer(&C.__ptr_zero) }
 func _vec2ZeroPtr() unsafe.Pointer  { return unsafe.Pointer(&C.__imvec2_zero) }
-func _vec2onesPtr() unsafe.Pointer  { return unsafe.Pointer(&C.__imvec2_ones) }
+func _vec2OnesPtr() unsafe.Pointer  { return unsafe.Pointer(&C.__imvec2_ones) }
 func _vec2_10Ptr() unsafe.Pointer   { return unsafe.Pointer(&C.__imvec2_10) }
 func _vec2_01Ptr() unsafe.Pointer   { return unsafe.Pointer(&C.__imvec2_01) }
+func _vec4ZeroPtr() unsafe.Pointer  { return unsafe.Pointer(&C.__imvec4_zero) }
 func _vec4OnesPtr() unsafe.Pointer  { return unsafe.Pointer(&C.__imvec4_ones) }
-func _vec4ZeroPtr() unsafe.Pointer  { return unsafe.Pointer(&C.__imvec4_ones) }
+func _vec2Zero() *ImVec2            { return (*ImVec2)(unsafe.Pointer(&C.__imvec2_zero)) }
+func _vec2Ones() *ImVec2            { return (*ImVec2)(unsafe.Pointer(&C.__imvec2_ones)) }
+func _vec4Zero() *ImVec4            { return (*ImVec4)(unsafe.Pointer(&C.__imvec4_zero)) }
+func _vec4Ones() *ImVec4            { return (*ImVec4)(unsafe.Pointer(&C.__imvec4_ones)) }
 
 var (
 	ImVec2ZeroPtr = (*ImVec2)(unsafe.Pointer(&C.__imvec2_zero))

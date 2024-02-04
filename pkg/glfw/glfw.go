@@ -101,38 +101,24 @@ func GetError() string {
 
 // Returns and clears the last error for the calling thread.
 
-var _ErrorCallback *c.Callback
+// var _ErrorCallback *c.Callback
+var GLFWerrorfunPrototype *c.CallbackPrototype = c.DefineCallbackPrototype(c.AbiDefault, c.Void, []c.Type{c.I32, c.Pointer})
 
 // GLFWerrorfun glfwSetErrorCallback(GLFWerrorfun callback)
 // Sets the error callback
-func SetErrorCallback(fn func(code int32, des string)) {
-	var cfn_ptr unsafe.Pointer = nil
+func SetErrorCallback(fn func(code int32, des string)) *c.Callback {
+	fnPtr, cb := unsafe.Pointer(nil), (*c.Callback)(nil)
 	if fn != nil { //add callback
-		if _ErrorCallback == nil {
-			_ErrorCallback = c.NewCallback(c.AbiDefault, c.Void, _typs_I32P)
-			_ErrorCallback.CallbackCvt = func(cb *c.Callback, args []*c.Value, ret *c.Value) {
-				if _ErrorCallback == nil {
-					return
-				}
+		cb = GLFWerrorfunPrototype.CreateCallback(
+			func(args []*c.Value, ret *c.Value) {
 				code := args[0].I32()
 				des := args[1].Str()
-				fn := cb.CallbackFunc.(func(code int32, des string))
-				if fn != nil {
-					fn(code, des)
-				}
-			}
-		}
-		_ErrorCallback.CallbackFunc = fn
-		cfn_ptr = _ErrorCallback.FuncPtr()
-	} else {
-		if _ErrorCallback != nil {
-			_ErrorCallback.CallbackCvt = nil
-			_ErrorCallback.CallbackFunc = nil
-			_ErrorCallback.Free()
-			_ErrorCallback = nil
-		}
+				fn(code, des)
+			})
+		fnPtr = cb.CFuncPtr()
 	}
-	glfwLib.Call(_func_glfwSetErrorCallback_, []interface{}{&cfn_ptr}).Free()
+	glfwLib.Call(_func_glfwSetErrorCallback_, []interface{}{&fnPtr}).Free()
+	return cb
 }
 
 type Monitor struct{ ptr unsafe.Pointer }
@@ -577,267 +563,205 @@ func (win *Window) GetWindowUserPointer() unsafe.Pointer {
 	return glfwLib.Call(_func_glfwGetWindowUserPointer_, []interface{}{&win.ptr}).PtrFree()
 }
 
+var GLFWwindowposfunPrototype *c.CallbackPrototype = c.DefineCallbackPrototype(c.AbiDefault, c.Void, []c.Type{c.Pointer, c.I32, c.I32})
+
 // GLFWwindowposfun glfwSetWindowPosCallback(GLFWwindow *window, GLFWwindowposfun callback)
 // Sets the position callback for the specified window.
 func (win *Window) SetWindowPosCallback(fn func(win *Window, xpos, ypos int32)) {
-	var cfn_ptr unsafe.Pointer = nil
+	fnPtr, cb := unsafe.Pointer(nil), (*c.Callback)(nil)
 	if fn != nil { //add callback
-		if win.windowPosCallback == nil { //not define
-			win.windowPosCallback = c.NewCallback(c.AbiDefault, c.Void, _typs_PI32I32)
-			win.windowPosCallback.CallbackCvt = func(cb *c.Callback, args []*c.Value, ret *c.Value) {
-				_xpos := args[1].I32()
-				_ypos := args[2].I32()
-				fn := cb.CallbackFunc.(func(win *Window, xpos, ypos int32))
-				if fn != nil {
-					fn(win, _xpos, _ypos)
-				}
-			}
-		}
+		cb = GLFWwindowposfunPrototype.CreateCallback(func(args []*c.Value, ret *c.Value) {
+			xpos := args[1].I32()
+			ypos := args[2].I32()
+			fn(win, xpos, ypos)
+		})
 
-		win.windowPosCallback.CallbackFunc = fn
-		cfn_ptr = win.windowPosCallback.FuncPtr()
+		win.windowPosCallback = cb
+		fnPtr = cb.CFuncPtr()
 	} else { //remove callback
 		if win.windowPosCallback != nil {
-			win.windowPosCallback.CallbackCvt = nil
-			win.windowPosCallback.CallbackFunc = nil
 			win.windowPosCallback.Free()
-			win.windowPosCallback = nil
 		}
 	}
-	glfwLib.Call(_func_glfwSetWindowPosCallback_, []interface{}{&win.ptr, &cfn_ptr}).Free()
+	glfwLib.Call(_func_glfwSetWindowPosCallback_, []interface{}{&win.ptr, &fnPtr}).Free()
 
 }
+
+var GLFWwindowsizefunPrototype *c.CallbackPrototype = c.DefineCallbackPrototype(c.AbiDefault, c.Void, []c.Type{c.Pointer, c.I32, c.I32})
 
 // GLFWwindowsizefun glfwSetWindowSizeCallback(GLFWwindow *window, GLFWwindowsizefun callback)
 // Sets the size callback for the specified window.
 func (win *Window) SetWindowSizeCallback(fn func(win *Window, width, height int32)) {
-	var cfn_ptr unsafe.Pointer = nil
+	fnPtr, cb := unsafe.Pointer(nil), (*c.Callback)(nil)
 	if fn != nil { //add callback
-		if win.windowSizeCallback == nil { //not define
-			win.windowSizeCallback = c.NewCallback(c.AbiDefault, c.Void, _typs_PI32I32)
-			win.windowSizeCallback.CallbackCvt = func(cb *c.Callback, args []*c.Value, ret *c.Value) {
-				_width := args[1].I32()
-				_height := args[2].I32()
-				fn := cb.CallbackFunc.(func(win *Window, width, height int32))
-				if fn != nil {
-					fn(win, _width, _height)
-				}
-			}
-		}
-		win.windowSizeCallback.CallbackFunc = fn
-		cfn_ptr = win.windowSizeCallback.FuncPtr()
+		cb = GLFWwindowsizefunPrototype.CreateCallback(func(args []*c.Value, ret *c.Value) {
+			width := args[1].I32()
+			height := args[2].I32()
+			fn(win, width, height)
+		})
+		win.windowSizeCallback = cb
+		fnPtr = cb.CFuncPtr()
 	} else { //remove callback
 		if win.windowSizeCallback != nil {
-			win.windowSizeCallback.CallbackCvt = nil
-			win.windowSizeCallback.CallbackFunc = nil
 			win.windowSizeCallback.Free()
-			win.windowSizeCallback = nil
 		}
 	}
-	glfwLib.Call(_func_glfwSetWindowSizeCallback_, []interface{}{&win.ptr, &cfn_ptr}).Free()
+	glfwLib.Call(_func_glfwSetWindowSizeCallback_, []interface{}{&win.ptr, &fnPtr}).Free()
 
 }
+
+var GLFWwindowclosefunPrototype *c.CallbackPrototype = c.DefineCallbackPrototype(c.AbiDefault, c.Void, []c.Type{c.Pointer})
 
 // GLFWwindowclosefun glfwSetWindowCloseCallback(GLFWwindow *window, GLFWwindowclosefun callback)
 // Sets the close callback for the specified window...
 func (win *Window) SetWindowCloseCallback(fn func(win *Window)) {
-	var cfn_ptr unsafe.Pointer = nil
+	fnPtr, cb := unsafe.Pointer(nil), (*c.Callback)(nil)
 	if fn != nil { //add callback
-		if win.windowCloseCallback == nil { //not define
-			win.windowCloseCallback = c.NewCallback(c.AbiDefault, c.Void, _typs_P)
-			win.windowCloseCallback.CallbackCvt = func(cb *c.Callback, args []*c.Value, ret *c.Value) {
-				fn := cb.CallbackFunc.(func(win *Window))
-				if fn != nil {
-					fn(win)
-				}
-			}
-		}
-		win.windowCloseCallback.CallbackFunc = fn
-		cfn_ptr = win.windowCloseCallback.FuncPtr()
+		cb = GLFWwindowclosefunPrototype.CreateCallback(func(args []*c.Value, ret *c.Value) {
+			fn(win)
+		})
+		win.windowCloseCallback = cb
+		fnPtr = cb.CFuncPtr()
+
 	} else { //remove callback
 		if win.windowCloseCallback != nil {
-			win.windowCloseCallback.CallbackCvt = nil
-			win.windowCloseCallback.CallbackFunc = nil
 			win.windowCloseCallback.Free()
-			win.windowCloseCallback = nil
 		}
 	}
-	glfwLib.Call(_func_glfwSetWindowCloseCallback_, []interface{}{&win.ptr, &cfn_ptr}).Free()
+	glfwLib.Call(_func_glfwSetWindowCloseCallback_, []interface{}{&win.ptr, &fnPtr}).Free()
 
 }
+
+var GLFWwindowrefreshfunPrototype *c.CallbackPrototype = c.DefineCallbackPrototype(c.AbiDefault, c.Void, []c.Type{c.Pointer})
 
 // GLFWwindowrefreshfun glfwSetWindowRefreshCallback(GLFWwindow *window, GLFWwindowrefreshfun callback)
 // Sets the refresh callback for the specified window.
 func (win *Window) SetWindowRefreshCallback(fn func(win *Window)) {
-	var cfn_ptr unsafe.Pointer = nil
+	fnPtr, cb := unsafe.Pointer(nil), (*c.Callback)(nil)
 	if fn != nil { //add callback
-		if win.windowRefreshCallback == nil { //not define
-			win.windowRefreshCallback = c.NewCallback(c.AbiDefault, c.Void, _typs_P)
-			win.windowRefreshCallback.CallbackCvt = func(cb *c.Callback, args []*c.Value, ret *c.Value) {
-				fn := cb.CallbackFunc.(func(win *Window))
-				if fn != nil {
-					fn(win)
-				}
-			}
-		}
-		win.windowRefreshCallback.CallbackFunc = fn
-		cfn_ptr = win.windowRefreshCallback.FuncPtr()
+		cb = GLFWwindowrefreshfunPrototype.CreateCallback(func(args []*c.Value, ret *c.Value) {
+			fn(win)
+		})
+		win.windowRefreshCallback = cb
+		fnPtr = cb.CFuncPtr()
 	} else { //remove callback
 		if win.windowRefreshCallback != nil {
-			win.windowRefreshCallback.CallbackCvt = nil
-			win.windowRefreshCallback.CallbackFunc = nil
 			win.windowRefreshCallback.Free()
-			win.windowRefreshCallback = nil
 		}
 	}
-	glfwLib.Call(_func_glfwSetWindowRefreshCallback_, []interface{}{&win.ptr, &cfn_ptr}).Free()
+	glfwLib.Call(_func_glfwSetWindowRefreshCallback_, []interface{}{&win.ptr, &fnPtr}).Free()
 
 }
+
+var GLFWwindowfocusfunPrototype *c.CallbackPrototype = c.DefineCallbackPrototype(c.AbiDefault, c.Void, []c.Type{c.Pointer, c.I32})
 
 // GLFWwindowfocusfun glfwSetWindowFocusCallback(GLFWwindow *window, GLFWwindowfocusfun callback)
 // Sets the focus callback for the specified window. More...
 func (win *Window) SetWindowFocusCallback(fn func(win *Window, focused bool)) {
-	var cfn_ptr unsafe.Pointer = nil
+	fnPtr, cb := unsafe.Pointer(nil), (*c.Callback)(nil)
 	if fn != nil { //add callback
-		if win.windowFocusCallback == nil { //not define
-			win.windowFocusCallback = c.NewCallback(c.AbiDefault, c.Void, _typs_PI32)
-			win.windowFocusCallback.CallbackCvt = func(cb *c.Callback, args []*c.Value, ret *c.Value) {
-				focused := args[1].Bool()
-				fn := cb.CallbackFunc.(func(win *Window, focused bool))
-				if fn != nil {
-					fn(win, focused)
-				}
-			}
-		}
-		win.windowFocusCallback.CallbackFunc = fn
-		cfn_ptr = win.windowFocusCallback.FuncPtr()
+		cb = GLFWwindowfocusfunPrototype.CreateCallback(func(args []*c.Value, ret *c.Value) {
+			focused := args[1].Bool()
+			fn(win, focused)
+		})
+		win.windowFocusCallback = cb
+		fnPtr = cb.CFuncPtr()
 	} else { //remove callback
 		if win.windowFocusCallback != nil {
-			win.windowFocusCallback.CallbackCvt = nil
-			win.windowFocusCallback.CallbackFunc = nil
 			win.windowFocusCallback.Free()
-			win.windowFocusCallback = nil
 		}
 	}
-	glfwLib.Call(_func_glfwSetWindowFocusCallback_, []interface{}{&win.ptr, &cfn_ptr}).Free()
+	glfwLib.Call(_func_glfwSetWindowFocusCallback_, []interface{}{&win.ptr, &fnPtr}).Free()
 
 }
+
+var GLFWwindowiconifyfunPrototype *c.CallbackPrototype = c.DefineCallbackPrototype(c.AbiDefault, c.Void, []c.Type{c.Pointer, c.I32})
 
 // GLFWwindowiconifyfun glfwSetWindowIconifyCallback(GLFWwindow *window, GLFWwindowiconifyfun callback)
 // Sets the iconify callback for the specified window.
 func (win *Window) SetWindowIconifyCallback(fn func(win *Window, iconified bool)) {
-	var cfn_ptr unsafe.Pointer = nil
+	fnPtr, cb := unsafe.Pointer(nil), (*c.Callback)(nil)
 	if fn != nil { //add callback
-		if win.windowIconifyCallback == nil { //not define
-			win.windowIconifyCallback = c.NewCallback(c.AbiDefault, c.Void, _typs_PI32)
-			win.windowIconifyCallback.CallbackCvt = func(cb *c.Callback, args []*c.Value, ret *c.Value) {
-				iconified := args[1].Bool()
-				fn := cb.CallbackFunc.(func(win *Window, iconified bool))
-				if fn != nil {
-					fn(win, iconified)
-				}
-			}
-		}
-		win.windowIconifyCallback.CallbackFunc = fn
-		cfn_ptr = win.windowIconifyCallback.FuncPtr()
+		cb = GLFWwindowiconifyfunPrototype.CreateCallback(func(args []*c.Value, ret *c.Value) {
+			iconified := args[1].Bool()
+			fn(win, iconified)
+		})
+		win.windowIconifyCallback = cb
+		fnPtr = cb.CFuncPtr()
 	} else { //remove callback
 		if win.windowIconifyCallback != nil {
-			win.windowIconifyCallback.CallbackCvt = nil
-			win.windowIconifyCallback.CallbackFunc = nil
 			win.windowIconifyCallback.Free()
-			win.windowIconifyCallback = nil
 		}
 	}
-	glfwLib.Call(_func_glfwSetWindowIconifyCallback_, []interface{}{&win.ptr, &cfn_ptr}).Free()
+	glfwLib.Call(_func_glfwSetWindowIconifyCallback_, []interface{}{&win.ptr, &fnPtr}).Free()
 
 }
+
+var GLFWwindowmaximizefunPrototype *c.CallbackPrototype = c.DefineCallbackPrototype(c.AbiDefault, c.Void, []c.Type{c.Pointer, c.I32})
 
 // GLFWwindowmaximizefun glfwSetWindowMaximizeCallback(GLFWwindow *window, GLFWwindowmaximizefun callback)
 // Sets the maximize callback for the specified window.
 func (win *Window) SetWindowMaximizeCallback(fn func(win *Window, maximized bool)) {
-	var cfn_ptr unsafe.Pointer = nil
+	fnPtr, cb := unsafe.Pointer(nil), (*c.Callback)(nil)
 	if fn != nil { //add callback
-		if win.windowMaximizeCallback == nil { //not define
-			win.windowMaximizeCallback = c.NewCallback(c.AbiDefault, c.Void, _typs_PI32)
-			win.windowMaximizeCallback.CallbackCvt = func(cb *c.Callback, args []*c.Value, ret *c.Value) {
-				maximized := args[1].Bool()
-				fn := cb.CallbackFunc.(func(win *Window, maximized bool))
-				if fn != nil {
-					fn(win, maximized)
-				}
-			}
-		}
-		win.windowMaximizeCallback.CallbackFunc = fn
-		cfn_ptr = win.windowMaximizeCallback.FuncPtr()
+		cb = GLFWwindowmaximizefunPrototype.CreateCallback(func(args []*c.Value, ret *c.Value) {
+			maximized := args[1].Bool()
+			fn(win, maximized)
+		})
+		win.windowMaximizeCallback = cb
+		fnPtr = cb.CFuncPtr()
 	} else { //remove callback
 		if win.windowMaximizeCallback != nil {
-			win.windowMaximizeCallback.CallbackCvt = nil
-			win.windowMaximizeCallback.CallbackFunc = nil
 			win.windowMaximizeCallback.Free()
-			win.windowMaximizeCallback = nil
 		}
 	}
-	glfwLib.Call(_func_glfwSetWindowMaximizeCallback_, []interface{}{&win.ptr, &cfn_ptr}).Free()
-
+	glfwLib.Call(_func_glfwSetWindowMaximizeCallback_, []interface{}{&win.ptr, &fnPtr}).Free()
 }
+
+var GLFWframebuffersizefunPrototype *c.CallbackPrototype = c.DefineCallbackPrototype(c.AbiDefault, c.Void, []c.Type{c.Pointer, c.I32, c.I32})
 
 // GLFWframebuffersizefun glfwSetFramebufferSizeCallback(GLFWwindow *window, GLFWframebuffersizefun callback)
 // Sets the framebuffer resize callback for the specified window.
 func (win *Window) SetFramebufferSizeCallback(fn func(win *Window, width, height int32)) {
-	var cfn_ptr unsafe.Pointer = nil
+	fnPtr, cb := unsafe.Pointer(nil), (*c.Callback)(nil)
 	if fn != nil { //add callback
-		if win.framebufferSizeCallback == nil { //not define
-			win.framebufferSizeCallback = c.NewCallback(c.AbiDefault, c.Void, _typs_PI32I32)
-			win.framebufferSizeCallback.CallbackCvt = func(cb *c.Callback, args []*c.Value, ret *c.Value) {
-				_width := args[1].I32()
-				_height := args[2].I32()
-				fn := cb.CallbackFunc.(func(win *Window, width, height int32))
-				if fn != nil {
-					fn(win, _width, _height)
-				}
-			}
-		}
-		win.framebufferSizeCallback.CallbackFunc = fn
-		cfn_ptr = win.framebufferSizeCallback.FuncPtr()
+		cb = GLFWframebuffersizefunPrototype.CreateCallback(func(args []*c.Value, ret *c.Value) {
+			width := args[1].I32()
+			height := args[2].I32()
+			fn(win, width, height)
+		})
+		win.windowFocusCallback = cb
+		fnPtr = cb.CFuncPtr()
 	} else { //remove callback
 		if win.framebufferSizeCallback != nil {
-			win.framebufferSizeCallback.CallbackCvt = nil
-			win.framebufferSizeCallback.CallbackFunc = nil
 			win.framebufferSizeCallback.Free()
-			win.framebufferSizeCallback = nil
 		}
 	}
-	glfwLib.Call(_func_glfwSetFramebufferSizeCallback_, []interface{}{&win.ptr, &cfn_ptr}).Free()
+	glfwLib.Call(_func_glfwSetFramebufferSizeCallback_, []interface{}{&win.ptr, &fnPtr}).Free()
 
 }
+
+var GGLFWwindowcontentscalefunPrototype *c.CallbackPrototype = c.DefineCallbackPrototype(c.AbiDefault, c.Void, []c.Type{c.Pointer, c.F32, c.F32})
 
 // GLFWwindowcontentscalefun glfwSetWindowContentScaleCallback(GLFWwindow *window, GLFWwindowcontentscalefun callback)
 // Sets the window content scale callback for the specified window.
 func (win *Window) SetWindowContentScaleCallback(fn func(win *Window, xscale, yscale float32)) {
-	var cfn_ptr unsafe.Pointer = nil
+	fnPtr, cb := unsafe.Pointer(nil), (*c.Callback)(nil)
 	if fn != nil { //add callback
-		if win.windowContentScaleCallback == nil { //not define
-			win.windowContentScaleCallback = c.NewCallback(c.AbiDefault, c.Void, _typs_PF32F32)
-			win.windowContentScaleCallback.CallbackCvt = func(cb *c.Callback, args []*c.Value, ret *c.Value) {
-				_xscale := args[1].F32()
-				_yscale := args[2].F32()
-				fn := cb.CallbackFunc.(func(win *Window, xscale, yscale float32))
-				if fn != nil {
-					fn(win, _xscale, _yscale)
-				}
-			}
-		}
-		win.windowContentScaleCallback.CallbackFunc = fn
-		cfn_ptr = win.windowContentScaleCallback.FuncPtr()
+		cb = GGLFWwindowcontentscalefunPrototype.CreateCallback(func(args []*c.Value, ret *c.Value) {
+			xscale := args[1].F32()
+			yscale := args[2].F32()
+			fn(win, xscale, yscale)
+		})
+		win.windowContentScaleCallback = cb
+		fnPtr = cb.CFuncPtr()
 	} else { //remove callback
 		if win.windowContentScaleCallback != nil {
-			win.windowContentScaleCallback.CallbackCvt = nil
-			win.windowContentScaleCallback.CallbackFunc = nil
 			win.windowContentScaleCallback.Free()
-			win.windowContentScaleCallback = nil
 		}
 	}
-	glfwLib.Call(_func_glfwSetWindowContentScaleCallback_, []interface{}{&win.ptr, &cfn_ptr}).Free()
+
+	glfwLib.Call(_func_glfwSetWindowContentScaleCallback_, []interface{}{&win.ptr, &fnPtr}).Free()
 
 }
 

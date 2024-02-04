@@ -3,6 +3,7 @@ package gi
 import (
 	"log"
 	"os"
+	"sync"
 	"time"
 	"unsafe"
 
@@ -47,26 +48,73 @@ func (io *QuickLaunchGlfwIO) Close() {
 	io.shouldClose = true
 }
 
-func QuickLaunchGlfw(title string, width, height int, init func(), loop func(io *QuickLaunchGlfwIO)) {
+type GlfwQuickLauncher struct {
+	win *glfw.Window
+	ctx *ImGuiContext
+
+	FPS      int
+	FontPath string
+	FontSize float32
+	BgColor  []float32
+}
+
+func NewGlfwQuickLauncher(title string, width, height int) *GlfwQuickLauncher {
 	win := glfw.CreateWindow(int32(width), int32(height), title, nil, nil)
 	win.MakeContextCurrent()
-	defer win.DestroyWindow()
+	glfw.SwapInterval(1)
 
 	ctx := CreateContext(nil)
-	defer DestroyContext(ctx)
-
 	ImGui_ImplGlfw_InitForOpenGL(win.CPtr(), true)
 	ImGui_ImplOpenGL3_Init(GLSLVer_3_2_Plus)
 
-	if init != nil {
-		init()
+	launcher := &GlfwQuickLauncher{win: win, ctx: ctx}
+
+	return launcher
+}
+func (launcher GlfwQuickLauncher) Run(loop func(io *QuickLaunchGlfwIO)) {
+
+	win := launcher.win
+	ctx := launcher.ctx
+	defer win.DestroyWindow()
+	defer DestroyContext(ctx)
+
+	{ //for windows add chinese font
+		font_path := `C:\Windows\Fonts\msyh.ttc`
+		font_size := float32(20)
+		if launcher.FontPath != "" {
+			font_path = launcher.FontPath
+		}
+		if launcher.FontSize > 0 {
+			font_size = launcher.FontSize
+		}
+		if _, err := os.Stat(font_path); err == nil {
+			fontCfg := NewImFontConfig()
+			io := GetIO()
+			atlas := NewImFontAtlas()
+			glyphRanges := atlas.GetGlyphRangesChineseFull()
+			atlas.Destroy()
+			io.Fonts.Clear()
+			io.Fonts.AddFontFromFileTTF(font_path, font_size, fontCfg, glyphRanges)
+		}
+	}
+
+	io := new(QuickLaunchGlfwIO)
+	io.bgR, io.bgG, io.bgB, io.bgA = 0.45, 0.55, 0.60, 1.00
+
+	if launcher.BgColor != nil && len(launcher.BgColor) < 4 {
+		clr := launcher.BgColor
+		io.bgR, io.bgG, io.bgB, io.bgA = clr[0], clr[1], clr[2], clr[3]
 	}
 
 	chanWait := make(chan bool, 1)
 	{ //for limit fps
+		fps := 30
+		if launcher.FPS > 0 {
+			fps = launcher.FPS
+		}
 		go func() {
 			for {
-				time.Sleep(time.Second / 30)
+				time.Sleep(time.Second / time.Duration(fps))
 				chanWait <- true
 				ok := <-chanWait
 				if !ok {
@@ -76,17 +124,6 @@ func QuickLaunchGlfw(title string, width, height int, init func(), loop func(io 
 		}()
 	}
 
-	{ //for windows add chhinese font
-		ms_cn_font_path := `C:\Windows\Fonts\msyh.ttc`
-		if _, err := os.Stat(ms_cn_font_path); err == nil {
-			fontCfg := NewImFontConfig()
-			io := GetIO()
-			io.Fonts.AddFontFromFileTTF(ms_cn_font_path, 20, fontCfg, NewImFontAtlas().GetGlyphRangesChineseSimplifiedCommon())
-		}
-	}
-
-	io := new(QuickLaunchGlfwIO)
-	io.bgR, io.bgG, io.bgB, io.bgA = 0.45, 0.55, 0.60, 1.00
 	for !win.WindowShouldClose() {
 
 		glfw.PollEvents()
@@ -120,7 +157,6 @@ func QuickLaunchGlfw(title string, width, height int, init func(), loop func(io 
 type ImageGlTexure struct {
 	tex   uint32
 	texID ImTextureID
-	ptr   unsafe.Pointer
 }
 
 //  var imagePtrHolder = make(map[unsafe.Pointer]interface{})
@@ -142,11 +178,29 @@ type ImageGlTexure struct {
 //			return &ImageGlTexure{tex: tex, texID: *(*ImTextureID)(unsafe.Pointer(&_tex)), ptr: ptr}
 //		}
 
-func NewImageGlTexure(ptr unsafe.Pointer, width, height uint32,
+var imageGlTexureConfs = make(map[*ImageGlTexure]imageGlTexureConf)
+
+type imageGlTexureConf struct {
+	ptr           unsafe.Pointer
+	width, height uint32
+	border        int32
+	interFmt      gl.TexFormat
+	dataFmt       gl.TexFormat
+	dataType      gl.TexDataType
+}
+
+var bindTextureLock = sync.Mutex{}
+
+func NewImageGlTexure(ptr unsafe.Pointer, width, height uint32, border bool,
 	interFmt gl.TexFormat, dataFmt gl.TexFormat, dataType gl.TexDataType) *ImageGlTexure {
 	tex := gl.GenTextures(1)[0]
+	bindTextureLock.Lock()
 	gl.BindTexture(gl.TexTag2D, tex)
 
+	_border := int32(0)
+	if border {
+		_border = 1
+	}
 	GL_LINEAR := int32(0x2601)
 	GL_CLAMP_TO_EDGE := int32(0x812F)
 	gl.TexParameteri(gl.TexTag2D, gl.TexParamMinFilter, GL_LINEAR)
@@ -154,34 +208,90 @@ func NewImageGlTexure(ptr unsafe.Pointer, width, height uint32,
 	gl.TexParameteri(gl.TexTag2D, gl.TexParamWrapS, GL_CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TexTag2D, gl.TexParamWrapT, GL_CLAMP_TO_EDGE)
 	gl.PixelStorei(gl.ParamUnpackAlignment, 1)
-	gl.TexImage2D(gl.TexTag2D, 0, interFmt, width, height, 0, dataFmt, dataType, ptr)
+	gl.TexImage2D(gl.TexTag2D, 0, interFmt, width, height, _border, dataFmt, dataType, ptr)
 
+	bindTextureLock.Unlock()
 	_tex := uint64(tex)
-	return &ImageGlTexure{tex: tex, texID: *(*ImTextureID)(unsafe.Pointer(&_tex)), ptr: ptr}
+	img := &ImageGlTexure{tex: tex, texID: *(*ImTextureID)(unsafe.Pointer(&_tex))}
+	imageGlTexureConfs[img] = imageGlTexureConf{
+		ptr: ptr, width: width, height: height, border: _border,
+		interFmt: interFmt, dataFmt: dataFmt, dataType: dataType}
+	return img
 }
 func (imTex *ImageGlTexure) Image(size ImVec2) {
 	ImageDefault(imTex.texID, size)
+}
+func (imTex *ImageGlTexure) ImageWithBorder(size ImVec2) {
+	Image(imTex.texID, size, *_vec2Zero(), *_vec2Ones(), *_vec4Ones(), *_vec4Ones())
+}
+func (imTex *ImageGlTexure) ImageCustom(size ImVec2, lt, rb ImVec2, tint, border ImVec4) {
+	Image(imTex.texID, size, lt, rb, tint, border)
 }
 func (imTex *ImageGlTexure) ImageButton(label *c.Str, size ImVec2) bool {
 	return ImageButtonDefault(label, imTex.texID, size)
 }
 func (imTex *ImageGlTexure) GetTexture() ImTextureID { return imTex.texID }
-func (imTex *ImageGlTexure) DeleteTexture()          { gl.DeleteTextures([]uint32{imTex.tex}) }
+func (imTex *ImageGlTexure) DeleteTexture() {
+	if imTex == nil {
+		return
+	}
+	gl.DeleteTextures([]uint32{imTex.tex})
+	delete(imageGlTexureConfs, imTex)
+	imTex = nil
+}
+func (imTex *ImageGlTexure) UpdateTexureByLastConf(ptr unsafe.Pointer) {
+	bindTextureLock.Lock()
+	defer bindTextureLock.Unlock()
 
-type MyStrs map[string]*c.Str
+	gl.BindTexture(gl.TexTag2D, imTex.tex)
+	conf := imageGlTexureConfs[imTex]
+	if ptr != nil {
+		conf.ptr = ptr
+	}
 
-type MyStoreOpera byte
+	GL_LINEAR := int32(0x2601)
+	gl.TexParameteri(gl.TexTag2D, gl.TexParamMinFilter, GL_LINEAR)
+	gl.TexParameteri(gl.TexTag2D, gl.TexParamMagFilter, GL_LINEAR)
+	gl.PixelStorei(gl.ParamUnpackAlignment, 1)
+	gl.TexImage2D(gl.TexTag2D, 0, conf.interFmt, conf.width, conf.height,
+		conf.border, conf.dataFmt, conf.dataType, conf.ptr)
+}
+func (imTex *ImageGlTexure) UpdateTexure(ptr unsafe.Pointer, width, height uint32, border bool,
+	interFmt gl.TexFormat, dataFmt gl.TexFormat, dataType gl.TexDataType) {
+
+	bindTextureLock.Lock()
+	gl.BindTexture(gl.TexTag2D, imTex.tex)
+
+	_border := int32(0)
+	if border {
+		_border = 1
+	}
+	GL_LINEAR := int32(0x2601)
+	gl.TexParameteri(gl.TexTag2D, gl.TexParamMinFilter, GL_LINEAR)
+	gl.TexParameteri(gl.TexTag2D, gl.TexParamMagFilter, GL_LINEAR)
+	gl.PixelStorei(gl.ParamUnpackAlignment, 1)
+	gl.TexImage2D(gl.TexTag2D, 0, interFmt, width, height, _border, dataFmt, dataType, ptr)
+	bindTextureLock.Unlock()
+
+	imageGlTexureConfs[imTex] = imageGlTexureConf{
+		ptr: ptr, width: width, height: height, border: _border,
+		interFmt: interFmt, dataFmt: dataFmt, dataType: dataType}
+}
+
+type Strs map[string]*c.Str
+
+type StrsOpera byte
 
 const (
-	OpDel MyStoreOpera = 1
+	OpDel StrsOpera = 1
 )
 
-func NewMyStrs() (strs MyStrs, getter func(str string, op ...MyStoreOpera) *c.Str) {
+func NewStrs() (strs Strs, getter func(str string, op ...StrsOpera) *c.Str) {
 	strs = make(map[string]*c.Str)
 	getter = strs.Opera
 	return
 }
-func (ms MyStrs) Opera(str string, op ...MyStoreOpera) *c.Str {
+func (ms Strs) Opera(str string, op ...StrsOpera) *c.Str {
 	if op != nil {
 		switch op[0] {
 		case OpDel:
@@ -194,6 +304,16 @@ func (ms MyStrs) Opera(str string, op ...MyStoreOpera) *c.Str {
 	}
 	ms[str] = c.NewStr(str)
 	return ms[str]
+}
+func (ms Strs) Clear() {
+	for k, v := range ms {
+		v.Free()
+		delete(ms, k)
+	}
+}
+func (ms Strs) Close() {
+	ms.Clear()
+	ms = nil
 }
 
 // type MyVec2s map[string]*ImVec2
